@@ -14,7 +14,7 @@ dependencies {
     implementation("junit:junit:4.12") //junit
     implementation("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT") //paper
     implementation("com.comphenix.protocol:ProtocolLib:4.5.0") //protocollib
-    implementation("com.github.noonmaru:tap:2.1.7") //tap
+    implementation("com.github.noonmaru:tap:2.2") //tap
 }
 
 tasks {
@@ -30,4 +30,13 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+    processResources {
+        filesMatching("**/*.yml") {
+            expand(project.properties)
+        }
+    }
+//    create<Copy>("distJar") {
+//        from(jar)
+//        into("W:\\Servers\\distServer\\plugins")
+//    }
 }
