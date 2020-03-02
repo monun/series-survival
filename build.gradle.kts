@@ -2,6 +2,9 @@ plugins {
     kotlin("jvm") version "1.3.61"
 }
 
+group = properties["pluginName"]!!
+version = properties["pluginVersion"]!!
+
 repositories {
     mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/") //paper
