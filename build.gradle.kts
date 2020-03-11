@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.3.61"
 }
 
-group = properties["pluginName"]!!
+group = properties["pluginGroup"]!!
 version = properties["pluginVersion"]!!
 
 repositories {
