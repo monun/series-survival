@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.72"
 }
 
-group = properties["pluginGroup"]!!
-version = properties["pluginVersion"]!!
+group = requireNotNull(properties["pluginName"]) { "Group is undefined in properties" }
+version = requireNotNull(properties["pluginVersion"]) { "Version is undefined in properties" }
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ dependencies {
     implementation("junit:junit:4.12") //junit
     implementation("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT") //paper
     implementation("com.comphenix.protocol:ProtocolLib:4.5.0") //protocollib
-    implementation("com.github.noonmaru:tap:2.3.3") //tap
+    implementation("com.github.noonmaru:tap:2.3.4") //tap
 }
 
 tasks {
@@ -40,6 +40,6 @@ tasks {
     }
 //    create<Copy>("distJar") {
 //        from(jar)
-//        into("W:\\Servers\\distServer\\plugins")
+//        into("W:\\Servers\\sample\\plugins")
 //    }
 }
