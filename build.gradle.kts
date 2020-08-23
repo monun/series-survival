@@ -15,9 +15,9 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8")) //kotlin
     implementation("junit:junit:4.12") //junit
-    implementation("com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT") //paper
-    implementation("com.comphenix.protocol:ProtocolLib:4.5.1") //protocollib
-    implementation("com.github.noonmaru:tap:2.4.1") //tap
+    implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT") //paper
+    implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT") //protocollib
+    implementation("com.github.noonmaru:tap:2.8.7") //tap
 }
 
 tasks {
@@ -40,6 +40,6 @@ tasks {
     }
 //    create<Copy>("distJar") {
 //        from(jar)
-//        into("W:\\Servers\\sample\\plugins")
+//        into("path")
 //    }
 }
