@@ -50,7 +50,7 @@ tasks {
         }
     }
     shadowJar {
-        relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+        relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.shaded.kommand")
         archiveClassifier.set("dist")
     }
 //    create<Copy>("distJar") {
