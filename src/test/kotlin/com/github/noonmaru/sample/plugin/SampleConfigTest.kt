@@ -19,7 +19,6 @@ import java.io.File
     "com.sun.org.apache.xerces.internal.jaxp.*",
 )
 class SampleConfigTest {
-
     companion object {
         @JvmStatic
         @BeforeClass
@@ -40,7 +39,7 @@ class SampleConfigTest {
 
     @Test
     fun test() {
-        assertEquals(config.numberValue13, 13)
-        assertEquals(config.stringValueHeptagram, "Heptagram")
+        assertEquals(13, config.numberValue13)
+        assertEquals("Heptagram", config.stringValueHeptagram)
     }
 }
