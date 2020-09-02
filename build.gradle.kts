@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.0"
 }
 
 group = requireNotNull(properties["pluginName"]) { "Group is undefined in properties" }
@@ -15,9 +15,9 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8")) //kotlin
     implementation("junit:junit:4.12") //junit
-    implementation("com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT") //paper
+    implementation("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT") //paper
     implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT") //protocollib
-    implementation("com.github.noonmaru:tap:2.8.7") //tap
+    implementation("com.github.noonmaru:tap:2.8.9") //tap
 }
 
 tasks {
