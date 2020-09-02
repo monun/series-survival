@@ -6,18 +6,23 @@ group = requireNotNull(properties["pluginName"]) { "Group is undefined in proper
 version = requireNotNull(properties["pluginVersion"]) { "Version is undefined in properties" }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/") //paper
-    maven(url = "https://repo.dmulloy2.net/nexus/repository/public/") //protocollib
-    maven(url = "https://jitpack.io/") //tap, psychic
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8")) //kotlin
-    implementation("junit:junit:4.12") //junit
     implementation("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT") //paper
-    implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT") //protocollib
-    implementation("com.github.noonmaru:tap:2.8.9") //tap
+
+    testImplementation("junit:junit:4.13") //junit
+    testImplementation("org.mockito:mockito-core:3.3.3")
+    testImplementation("org.powermock:powermock-module-junit4:2.0.7")
+    testImplementation("org.powermock:powermock-api-mockito2:2.0.7")
+    testImplementation("org.slf4j:slf4j-api:1.7.25")
+    testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
+    testImplementation("org.spigotmc:spigot:1.16.2-R0.1-SNAPSHOT") //paper
 }
 
 tasks {
