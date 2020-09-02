@@ -1,8 +1,9 @@
 plugins {
     kotlin("jvm") version "1.4.0"
+    id("com.github.johnrengelman.shadow") version "6.0.0"
 }
 
-group = requireNotNull(properties["pluginName"]) { "Group is undefined in properties" }
+group = requireNotNull(properties["pluginGroup"]) { "Group is undefined in properties" }
 version = requireNotNull(properties["pluginVersion"]) { "Version is undefined in properties" }
 
 repositories {
@@ -14,10 +15,11 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    implementation("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
-    implementation("com.github.noonmaru:tap:2.8.9")
+    compileOnly(kotlin("stdlib-jdk8"))
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
+    compileOnly("com.github.noonmaru:tap:2.8.9")
+    implementation("com.github.noonmaru:kommand:0.1.9")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
@@ -47,4 +49,12 @@ tasks {
             expand(project.properties)
         }
     }
+    shadowJar {
+        relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+        archiveClassifier.set("dist")
+    }
+//    create<Copy>("distJar") {
+//        from("shadowJar")
+//        into("W:\\Servers\\server\\plugins")
+//    }
 }
