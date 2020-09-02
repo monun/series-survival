@@ -12,7 +12,6 @@ import org.bukkit.craftbukkit.v1_16_R2.CraftWorld
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemFactory
 import org.bukkit.craftbukkit.v1_16_R2.util.Versioning
 import org.mockito.Mockito
-import org.powermock.reflect.Whitebox
 import org.spigotmc.SpigotWorldConfig
 import java.util.logging.Logger
 
