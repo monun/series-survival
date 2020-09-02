@@ -2,6 +2,9 @@ package com.github.noonmaru.sample.plugin
 
 import org.bukkit.configuration.file.YamlConfiguration
 
+/**
+ * @author Noonmaru
+ */
 class SampleConfig(config: YamlConfiguration) {
     val numberValue13: Int
     val stringValueHeptagram: String
