@@ -19,7 +19,7 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
     compileOnly("com.github.noonmaru:tap:2.8.9")
-    implementation("com.github.noonmaru:kommand:0.1.9")
+    implementation("com.github.noonmaru:kommand:0.3")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
