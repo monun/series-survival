@@ -8,12 +8,13 @@ branches:
     - develop
 
 before_install:
+  - wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar -O BuildTools.jar && java -jar BuildTools.jar --rev 1.16.2
   - chmod +x ./gradlew
 
-#cache:
-#  directories:
-#    - '$HOME/.m2'
-#    - '$HOME/.gradle'
+cache:
+  directories:
+    - '$HOME/.m2'
+    - '$HOME/.gradle'
 
 script:
   - ./gradlew clean test
