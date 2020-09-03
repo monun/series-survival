@@ -1,5 +1,4 @@
 language: java
-sudo: true
 jdk:
   - openjdk8
 
@@ -11,8 +10,8 @@ branches:
 before_install:
   - chmod +x ./gradlew
 
-cache:
-  directories:
+#cache:
+#  directories:
 #    - '$HOME/.m2'
 #    - '$HOME/.gradle'
 
