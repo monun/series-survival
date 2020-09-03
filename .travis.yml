@@ -1,0 +1,21 @@
+language: java
+sudo: true
+jdk:
+  - openjdk8
+
+branches:
+  only:
+    - master
+    - develop
+
+before_install:
+  - wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar -O BuildTools.jar && java -jar BuildTools.jar
+  - chmod +x ./gradlew
+
+cache:
+  directories:
+    - '$HOME/.m2'
+    - '$HOME/.gradle'
+
+script:
+  - ./gradlew shadowJar
