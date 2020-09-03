@@ -10,14 +10,12 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/")
-    maven(url = "https://repo.dmulloy2.net/nexus/repository/public/")
     maven(url = "https://jitpack.io")
 }
 
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    compileOnly("com.comphenix.protocol:ProtocolLib:4.6.0-SNAPSHOT")
     compileOnly("com.github.noonmaru:tap:2.8.9")
     implementation("com.github.noonmaru:kommand:0.3")
 
