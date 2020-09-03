@@ -16,4 +16,4 @@ before_install:
 #    - '$HOME/.gradle'
 
 script:
-  - ./gradlew shadowJar
+  - ./gradlew clean test
