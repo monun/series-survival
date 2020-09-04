@@ -16,7 +16,7 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    compileOnly("com.github.noonmaru:tap:2.8.9")
+    implementation("com.github.noonmaru:tap:3.0.0")
     implementation("com.github.noonmaru:kommand:0.3")
 
     testImplementation("junit:junit:4.13")
@@ -47,19 +47,13 @@ tasks {
             expand(project.properties)
         }
     }
-    shadowJar {
-        archiveClassifier.set("dist")
-    }
-//    create<Copy>("distJar") {
-//        from("shadowJar")
-//        into("W:\\Servers\\server\\plugins")
-//    }
 }
 
 if (!hasProperty("debug")) {
     tasks {
         shadowJar {
-            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.shaded.kommand")
+            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+            relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
     }
 }
