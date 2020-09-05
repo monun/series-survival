@@ -6,7 +6,7 @@ before_install:
   - ./buildtools.sh 1.16.2
   - chmod +x ./gradlew
 install:
-  - ./gradlew clean -Pgroup=$GROUP -Pversion=$VERSION -xtest build publishToMavenLocal
+#  - ./gradlew clean -Pgroup=$GROUP -Pversion=$VERSION -xtest build publishToMavenLocal
   - rm -rf $HOME/.m2/repository/org/bukkit/
   - rm -rf $HOME/.m2/repository/org/craftbukkit/
   - rm -rf $HOME/.m2/repository/org/spigotmc/
