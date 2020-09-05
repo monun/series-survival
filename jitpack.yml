@@ -9,4 +9,4 @@ install:
 #  - ./gradlew clean -Pgroup=$GROUP -Pversion=$VERSION -xtest build publishToMavenLocal
   - rm -rf $HOME/.m2/repository/org/bukkit/
   - rm -rf $HOME/.m2/repository/org/spigotmc/
-  - find $HOME/.m2/repository/ *-SNAPSHOT.jar
+  - find $HOME/.m2/repository/ -name *-SNAPSHOT.jar
