@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.4.0"
     id("com.github.johnrengelman.shadow") version "6.0.0"
+    `maven-publish`
 }
 
 group = requireNotNull(properties["pluginGroup"]) { "Group is undefined in properties" }
@@ -16,7 +17,7 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-    implementation("com.github.noonmaru:tap:3.0.0")
+//    implementation("com.github.noonmaru:tap:3.0.0")
     implementation("com.github.noonmaru:kommand:0.3")
 
     testImplementation("junit:junit:4.13")
@@ -47,6 +48,9 @@ tasks {
             expand(project.properties)
         }
     }
+    create<Jar>("sourcesJar") {
+        from(sourceSets["main"].allSource)
+    }
 }
 
 if (!hasProperty("debug")) {
@@ -54,6 +58,17 @@ if (!hasProperty("debug")) {
         shadowJar {
             relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
             relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
+        }
+    }
+}
+
+
+
+publishing {
+    publications {
+        create<MavenPublication>("Sample") {
+            from(components["java"])
+            artifact(tasks["sourcesJar"])
         }
     }
 }
