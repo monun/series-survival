@@ -49,6 +49,7 @@ tasks {
         }
     }
     create<Jar>("sourcesJar") {
+        archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
 }
@@ -61,8 +62,6 @@ if (!hasProperty("debug")) {
         }
     }
 }
-
-
 
 publishing {
     publications {

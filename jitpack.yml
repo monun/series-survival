@@ -7,6 +7,6 @@ before_install:
   - chmod +x ./gradlew
 install:
   - ./gradlew clean -Pgroup=$GROUP -Pversion=$VERSION -xtest build publishToMavenLocal
-  - rm -rf $HOME/.m2/repository/org/bukkit
-  - rm -rf $HOME/.m2/repository/org/craftbukkit
-  - rm -rf $HOME/.m2/repository/org/spigotmc
+  - rm -rf $HOME/.m2/repository/org/bukkit/
+  - rm -rf $HOME/.m2/repository/org/craftbukkit/
+  - rm -rf $HOME/.m2/repository/org/spigotmc/
