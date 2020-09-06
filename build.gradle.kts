@@ -17,7 +17,7 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
-//    implementation("com.github.noonmaru:tap:3.0.0")
+    implementation("com.github.noonmaru:tap:3f3598c24c")
     implementation("com.github.noonmaru:kommand:0.3")
 
     testImplementation("junit:junit:4.13")
