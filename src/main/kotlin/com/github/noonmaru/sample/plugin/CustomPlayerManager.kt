@@ -7,6 +7,9 @@ import kotlin.collections.HashMap
 class CustomPlayerManager {
     private val players = HashMap<UUID, CustomPlayer>()
 
+    val customPlayers
+        get() = players.values
+
     fun registerPlayer(player: Player): CustomPlayer {
         return players.computeIfAbsent(player.uniqueId) { CustomPlayer(player) }
     }
