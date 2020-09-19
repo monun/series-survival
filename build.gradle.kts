@@ -1,11 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.4.0"
+    kotlin("jvm") version "1.4.10"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     `maven-publish`
 }
-
-group = requireNotNull(properties["pluginGroup"]) { "Group is undefined in properties" }
-version = requireNotNull(properties["pluginVersion"]) { "Version is undefined in properties" }
 
 repositories {
     mavenLocal()
@@ -18,7 +15,7 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.destroystokyo.paper:paper-api:1.16.2-R0.1-SNAPSHOT")
     implementation("com.github.noonmaru:tap:3.0.0")
-    implementation("com.github.noonmaru:kommand:0.3")
+    implementation("com.github.noonmaru:kommand:0.3.1")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
@@ -51,6 +48,24 @@ tasks {
     create<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+    shadowJar {
+        archiveBaseName.set(project.property("pluginName").toString())
+        archiveVersion.set("") // For bukkit plugin update
+        archiveClassifier.set("") // Remove 'all'
+    }
+    create<Copy>("copyJarToDocker") {
+        from(shadowJar)
+
+        var dest = File(".docker/plugins")
+        // Copy bukkit plugin update folder
+        if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")
+
+        into(dest)
+
+        doLast {
+            println("Copy to ${dest.path}")
+        }
     }
 }
 

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+function log() {
+  echo "[plugins] $*"
+}
+
+log "Downloading..."
+
+PLUGINS_DIR="/data/plugins"
+PLUGINS=(
+  "https://github.com/noonmaru/kotlin-plugin/releases/download/1.4.10/kotlin-1.4.10.jar"
+  "https://github.com/noonmaru/auto-reloader/releases/download/1.0.0/AutoReloader.jar"
+  "https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar"
+)
+
+for PLUGIN_URL in ${PLUGINS[@]}; do
+  log "Download plugin from $PLUGIN_URL"
+  wget -Nq "$PLUGIN_URL" -P $PLUGINS_DIR
+done
+
+exec /start
