@@ -16,8 +16,6 @@ ENV MOTD="A Minecraft Debugging Server powered by Docker"
 
 EXPOSE 5005
 
-COPY docker-setup /
+COPY docker-setup-plugin /
 
-RUN dos2unix /docker-setup && chmod +x /docker-setup
-
-ENTRYPOINT [ "/docker-setup" ]
+RUN dos2unix /docker-setup-plugin && chmod +x /docker-setup-plugin

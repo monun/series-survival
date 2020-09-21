@@ -3,7 +3,7 @@ version: '3.7'
 services:
   paper:
     build: .
-    container_name: tap-sample
+    container_name: debug_tap_sample
     stdin_open: true
     tty: true
     ports:
@@ -11,3 +11,8 @@ services:
       - 5005:5005
     volumes:
       - ./.docker:/data
+    entrypoint:
+      - /docker-setup-plugin
+      - https://github.com/noonmaru/kotlin-plugin/releases/download/1.4.10/Kotlin.jar
+      - https://github.com/noonmaru/auto-reloader/releases/download/1.0.0/AutoReloader.jar
+      - https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar
