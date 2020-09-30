@@ -61,7 +61,7 @@ tasks {
         archiveClassifier.set("") // Remove 'all'
 
         if (relocate) {
-            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.ommand")
+            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
             relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
     }
