@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.4.10"
     id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("de.undercouch.download") version "4.1.1"
     `maven-publish`
 }
 
@@ -20,8 +21,8 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
 
-    implementation("com.github.noonmaru:tap:3.1.6")
-    implementation("com.github.noonmaru:kommand:0.4.0")
+    implementation("com.github.noonmaru:tap:3.2.0")
+    implementation("com.github.noonmaru:kommand:0.6.3")
 
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:3.3.3")
@@ -71,6 +72,30 @@ tasks {
         if (File(dest, shadowJar.get().archiveFileName.get()).exists())
             dest = File(dest, "update") // if plugin.jar exists in plugins change dest to plugins/update
         into(dest)
+    }
+    val buildtoolsDir = ".buildtools/"
+
+    create<de.undercouch.gradle.tasks.download.Download>("downloadBuildTools") {
+        src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
+        dest("$buildtoolsDir/BuildTools.jar")
+    }
+    create<DefaultTask>("setupWorkspace") {
+        doLast {
+            for (v in listOf("1.16.3")) {
+                javaexec {
+                    workingDir(buildtoolsDir)
+                    main = "-jar"
+                    args = listOf(
+                        "./BuildTools.jar",
+                        "--rev",
+                        v
+                    )
+                }
+            }
+            File(buildtoolsDir).deleteRecursively()
+        }
+
+        dependsOn(named("downloadBuildTools"))
     }
 }
 
