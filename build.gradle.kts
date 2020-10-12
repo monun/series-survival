@@ -21,17 +21,17 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
 
-    implementation("com.github.noonmaru:tap:3.2.0")
+    implementation("com.github.noonmaru:tap:3.2.3")
     implementation("com.github.noonmaru:kommand:0.6.3")
 
-    testImplementation("junit:junit:4.13")
-    testImplementation("org.mockito:mockito-core:3.3.3")
-    testImplementation("org.powermock:powermock-module-junit4:2.0.7")
-    testImplementation("org.powermock:powermock-api-mockito2:2.0.7")
-    testImplementation("org.slf4j:slf4j-api:1.7.25")
-    testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
-    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
-    testImplementation("org.spigotmc:spigot:1.16.3-R0.1-SNAPSHOT")
+//    testImplementation("junit:junit:4.13")
+//    testImplementation("org.mockito:mockito-core:3.3.3")
+//    testImplementation("org.powermock:powermock-module-junit4:2.0.7")
+//    testImplementation("org.powermock:powermock-api-mockito2:2.0.7")
+//    testImplementation("org.slf4j:slf4j-api:1.7.25")
+//    testImplementation("org.apache.logging.log4j:log4j-core:2.8.2")
+//    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.8.2")
+//    testImplementation("org.spigotmc:spigot:1.16.3-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -73,30 +73,35 @@ tasks {
             dest = File(dest, "update") // if plugin.jar exists in plugins change dest to plugins/update
         into(dest)
     }
-    val buildtoolsDir = ".buildtools/"
 
-    create<de.undercouch.gradle.tasks.download.Download>("downloadBuildTools") {
-        src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
-        dest("$buildtoolsDir/BuildTools.jar")
+    build {
+        dependsOn(shadowJar)
     }
-    create<DefaultTask>("setupWorkspace") {
-        doLast {
-            for (v in listOf("1.16.3")) {
-                javaexec {
-                    workingDir(buildtoolsDir)
-                    main = "-jar"
-                    args = listOf(
-                        "./BuildTools.jar",
-                        "--rev",
-                        v
-                    )
-                }
-            }
-            File(buildtoolsDir).deleteRecursively()
-        }
 
-        dependsOn(named("downloadBuildTools"))
-    }
+//    val buildtoolsDir = ".buildtools/"
+//
+//    create<de.undercouch.gradle.tasks.download.Download>("downloadBuildTools") {
+//        src("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar")
+//        dest("$buildtoolsDir/BuildTools.jar")
+//    }
+//    create<DefaultTask>("setupWorkspace") {
+//        doLast {
+//            for (v in listOf("1.16.3")) {
+//                javaexec {
+//                    workingDir(buildtoolsDir)
+//                    main = "-jar"
+//                    args = listOf(
+//                        "./BuildTools.jar",
+//                        "--rev",
+//                        v
+//                    )
+//                }
+//            }
+//            File(buildtoolsDir).deleteRecursively()
+//        }
+//
+//        dependsOn(named("downloadBuildTools"))
+//    }
 }
 
 publishing {
