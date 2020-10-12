@@ -1,8 +1,8 @@
 plugins {
     kotlin("jvm") version "1.4.10"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("de.undercouch.download") version "4.1.1"
-    `maven-publish`
+//    id("de.undercouch.download") version "4.1.1"
+//    `maven-publish`
 }
 
 val relocate = (findProperty("relocate") as? String)?.toBoolean() ?: true
@@ -104,11 +104,11 @@ tasks {
 //    }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("Sample") {
-            from(components["java"])
-            artifact(tasks["sourcesJar"])
-        }
-    }
-}
+//publishing {
+//    publications {
+//        create<MavenPublication>("Sample") {
+//            from(components["java"])
+//            artifact(tasks["sourcesJar"])
+//        }
+//    }
+//}
