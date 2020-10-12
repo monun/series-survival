@@ -66,7 +66,7 @@ tasks {
             relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
     }
-    create<Copy>("copyJarToDocker") {
+    create<Copy>("docker") {
         from(shadowJar)
         var dest = File(".docker/plugins")
         if (File(dest, shadowJar.get().archiveFileName.get()).exists())
