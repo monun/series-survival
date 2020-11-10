@@ -19,9 +19,9 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.3-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
 
-    implementation("com.github.noonmaru:tap:3.2.3")
+    implementation("com.github.noonmaru:tap:3.2.5")
     implementation("com.github.noonmaru:kommand:0.6.3")
 
 //    testImplementation("junit:junit:4.13")
