@@ -18,10 +18,10 @@ repositories {
 dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
-    implementation("com.github.noonmaru:tap:3.2.7")
-    implementation("com.github.noonmaru:kommand:0.6.4")
+    implementation("com.github.monun:tap:3.3.1")
+    implementation("com.github.monun:kommand:0.7.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
@@ -54,8 +54,8 @@ tasks {
         archiveClassifier.set("") // Remove 'all'
 
         if (relocate) {
-            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
-            relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
+            relocate("com.github.monun.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+            relocate("com.github.monun.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
 
         doFirst {
@@ -75,7 +75,7 @@ tasks {
     create<DefaultTask>("setupWorkspace") {
         doLast {
             val versions = arrayOf(
-                "1.16.4"
+                "1.16.5"
             )
             val buildtoolsDir = file(".buildtools")
             val buildtools = File(buildtoolsDir, "BuildTools.jar")

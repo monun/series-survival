@@ -1,8 +1,8 @@
-package com.github.noonmaru.sample.plugin
+package com.github.monun.sample.plugin
 
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
- * @author Noonmaru
+ * @author Monun
  */
 class SamplePlugin : JavaPlugin()

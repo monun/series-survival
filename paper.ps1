@@ -8,12 +8,12 @@ $Debug = $true
 $Jar = "paper.jar"
 
 # Spigot
-$Version = "1.16.4"
+$Version = "1.16.5"
 
 # Plugins
 $Plugins = (
-"https://github.com/noonmaru/kotlin-plugin/releases/download/1.4.21/Kotlin.jar",
-"https://github.com/noonmaru/auto-reloader/releases/download/1.0.2/AutoReloader.jar"
+    "https://github.com/monun/kotlin-plugin/releases/download/1.4.21/Kotlin.jar",
+    "https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar"
 )
 
 # Backup
@@ -224,6 +224,7 @@ While ($true)
 
     if ($Restart -eq 'N')
     {
+        Set-Location $ProjectFolder
         Break
     }
 }
