@@ -1,1 +1,1 @@
-rootProject.name = "sample"
+rootProject.name = "tap-sample-plugin"
