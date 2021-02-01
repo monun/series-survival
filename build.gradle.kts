@@ -20,13 +20,13 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
-    implementation("com.github.monun:tap:3.3.1")
+    implementation("com.github.monun:tap:3.3.2")
     implementation("com.github.monun:kommand:0.7.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-    testImplementation("org.mockito:mockito-core:3.6.28")
-    testImplementation("org.spigotmc:spigot:1.16.4-R0.1-SNAPSHOT")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+//    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+//    testImplementation("org.mockito:mockito-core:3.6.28")
+//    testImplementation("org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -67,7 +67,7 @@ tasks {
     }
     create<Copy>("paper") {
         from(shadowJar)
-        var dest = file(".paper/plugins")
+        var dest = File(rootDir, ".paper/plugins")
         // if plugin.jar exists in plugins change dest to plugins/update
         if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")
         into(dest)
