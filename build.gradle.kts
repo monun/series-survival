@@ -1,7 +1,7 @@
 import java.io.OutputStream
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "5.2.0"
 //    `maven-publish`
 }
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     compileOnly(kotlin("stdlib"))
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
     implementation("com.github.monun:tap:3.+")
