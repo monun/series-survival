@@ -65,9 +65,9 @@ tasks {
     build {
         dependsOn(shadowJar)
     }
-    create<Copy>("paper") {
+    create<Copy>("copyToServer") {
         from(shadowJar)
-        var dest = File(rootDir, ".paper/plugins")
+        var dest = File(rootDir, ".server/plugins")
         // if plugin.jar exists in plugins change dest to plugins/update
         if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")
         into(dest)
