@@ -20,7 +20,7 @@ $Plugins = @(
 )
 
 # Backup (7z)
-$AskBackup = $true
+$AskBackup = $false
 
 # Run
 $ServerJarURL = "https://papermc.io/api/v1/paper/$Version/latest/download"
