@@ -3,3 +3,9 @@ main: $pluginMain
 depend: [ Kotlin, ProtocolLib ]
 api-version: '1.16'
 version: $version
+commands:
+  svl:
+    permission: survival.command
+permissions:
+  survival.command:
+    default: op
