@@ -60,6 +60,8 @@ object CommandSVL {
         if (bio is Bio.Zombie) {
             bio.resetCooldown()
         }
+
+        sender.sendFeedback("Reset cooldown ${player.name}")
     }
 }
 
