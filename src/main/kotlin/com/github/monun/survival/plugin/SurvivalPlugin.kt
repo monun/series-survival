@@ -95,10 +95,13 @@ class SurvivalPlugin : JavaPlugin() {
     private fun setupWorlds() {
         for (world in server.worlds) {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
+            world.setGameRule(GameRule.REDUCED_DEBUG_INFO, true)
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false)
-            world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false)
+            world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true)
             world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false)
             world.setGameRule(GameRule.SPAWN_RADIUS, 5)
+            world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
+            world.setGameRule(GameRule.DO_FIRE_TICK, false)
         }
 
         server.worlds.first().let { world ->

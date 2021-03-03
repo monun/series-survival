@@ -5,8 +5,9 @@ import com.github.monun.tap.config.computeConfig
 import java.io.File
 
 object SurvivalConfig {
+    var bootsFallSlow = 4
     @Config
-    var bootsFallDamage = 4.0
+    var bootsFallDamage = 6.0
     @Config
     var compassDurationTime = 20000L
     @Config
@@ -33,6 +34,8 @@ object SurvivalConfig {
     var poisonAmplifier = 0
     @Config
     var fatigueAmplifier = 0
+    @Config
+    var zombieDamage = 0.5
     @Config
     var defaultHumanList = arrayListOf(
         "heptagram",

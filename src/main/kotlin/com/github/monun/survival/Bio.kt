@@ -24,6 +24,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.entity.*
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerTeleportEvent
@@ -183,7 +184,7 @@ abstract class Bio(
             val player = player
             val item = player.inventory.itemInMainHand
 
-            if (item.isSimilar(SurvivalItem.vaccine)) {
+            if (item.type == Material.TOTEM_OF_UNDYING) {
                 val clicked = event.rightClicked
 
                 if (clicked is Player) {
@@ -202,7 +203,7 @@ abstract class Bio(
                         val title = Title.title(
                             Component.text().color(TextColor.color(0x00FFFF)).content(clicked.name).build(),
                             Component.text().color(TextColor.color(0x00FFFF)).content("좀비 바이러스로부터 해방되었습니다!").build(),
-                            Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(1000))
+                            Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(500))
                         )
                         for (onlinePlayer in Bukkit.getOnlinePlayers()) {
                             onlinePlayer.showTitle(title)
@@ -223,7 +224,7 @@ abstract class Bio(
             val title = Title.title(
                 Component.text("${ChatColor.RED}생존자 사망"),
                 message,
-                Title.Times.of(Duration.ofMillis(500L), Duration.ofSeconds(5L), Duration.ofSeconds(1L))
+                Title.Times.of(Duration.ofMillis(500L), Duration.ofSeconds(5L), Duration.ofSeconds(1))
             )
 
             Bukkit.getOnlinePlayers().forEach {
@@ -290,6 +291,11 @@ abstract class Bio(
         }
 
         override fun onDetach() {
+            registeredListener?.run {
+                unregister()
+                registeredListener = null
+            }
+
             val player = player
 
             for (type in PotionEffectType.values()) {
@@ -300,13 +306,9 @@ abstract class Bio(
                 player.setCooldown(wandHandler.first.type, 0)
             }
 
-            survivor.survival.let { survival ->
-                survival.fakeEntityServerForZombie.removePlayer(player)
-                registeredListener?.run {
-                    unregister()
-                    registeredListener = null
-                }
-            }
+            survivor.survival.fakeEntityServerForZombie.removePlayer(player)
+
+
         }
 
         override fun onLoad(config: ConfigurationSection) {
@@ -382,6 +384,8 @@ abstract class Bio(
                 }
             }
 
+            event.damage /= SurvivalConfig.zombieDamage
+
             victim.addPotionEffect(
                 PotionEffect(
                     PotionEffectType.POISON,
@@ -437,6 +441,19 @@ abstract class Bio(
             }
         }
 
+        @EventHandler(ignoreCancelled = true)
+        @TargetEntity(TamerProvider::class)
+        fun onEntityTame(event: EntityTameEvent) {
+            event.isCancelled = true
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        fun onPickupItem(event: PlayerAttemptPickupItemEvent) {
+            if (event.item.itemStack.type == Material.TOTEM_OF_UNDYING) {
+                event.isCancelled = true
+            }
+        }
+
         fun resetCooldown() {
             val player = player
 
@@ -473,6 +490,8 @@ abstract class Bio(
             }
 
             registerWandHandler(SurvivalItem.wandSummon) { event ->
+                if (player.world.name.endsWith("nether")) return@registerWandHandler
+
                 survivor.survival.players.asSequence()
                     .filter { it.bio is Zombie && it != survivor && it.player.gameMode != GameMode.SPECTATOR }
                     .sortedBy { other ->
@@ -488,7 +507,7 @@ abstract class Bio(
                     val title = Title.title(
                         Component.text("${ChatColor.RED}GRRRR.."),
                         Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
-                        Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(500))
+                        Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofSeconds(1))
                     )
 
                     for (survivalPlayer in list) {
@@ -607,5 +626,11 @@ abstract class Bio(
 class TargetProvider : EntityProvider<EntityTargetLivingEntityEvent> {
     override fun getFrom(event: EntityTargetLivingEntityEvent): Entity? {
         return event.target
+    }
+}
+
+class TamerProvider: EntityProvider<EntityTameEvent> {
+    override fun getFrom(event: EntityTameEvent): Entity {
+        return event.owner.takeIf { it is Entity } as Entity
     }
 }

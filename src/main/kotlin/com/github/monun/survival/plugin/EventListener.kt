@@ -111,6 +111,10 @@ class EventListener(
                 bootsDamage -= reduce
                 bootsMeta.damage += reduce
                 boots.itemMeta = bootsMeta
+
+                if (bootsMeta.damage >= maxDurability) {
+                    boots.amount = 0
+                }
             }
         }
 
@@ -118,8 +122,8 @@ class EventListener(
             entity.addPotionEffect(
                 PotionEffect(
                     PotionEffectType.SLOW,
-                    (bootsDamage / SurvivalConfig.bootsFallDamage).toInt(),
-                    0, true, true, true
+                    (bootsDamage / SurvivalConfig.bootsFallDamage).toInt() * 20,
+                    SurvivalConfig.bootsFallSlow, true, true, true
                 )
             )
         }
@@ -131,5 +135,5 @@ class EventListener(
 fun Location.random(spread: Double): Location {
     x += nextDouble(-spread, spread)
     z += nextDouble(-spread, spread)
-    return toHighestLocation().add(0.5, 0.5, 0.5)
+    return toHighestLocation().add(0.5, 1.0, 0.5)
 }
