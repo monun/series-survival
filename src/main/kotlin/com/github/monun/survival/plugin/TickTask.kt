@@ -1,6 +1,6 @@
 package com.github.monun.survival.plugin
 
-import com.github.monun.survival.Config
+import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
 import com.github.monun.tap.fake.FakeEntityServer
 import java.io.File
@@ -24,7 +24,7 @@ class TickTask(
         fakeEntityServerForHuman.update()
 
         if (configFileLastModified != configFile.lastModified()) {
-            Config.load(configFile)
+            SurvivalConfig.load(configFile)
             configFileLastModified = configFile.lastModified()
 
             survival.players.forEach { it.bio.applyAttribute() }

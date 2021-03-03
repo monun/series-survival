@@ -3,7 +3,6 @@ package com.github.monun.survival
 import com.github.monun.tap.ref.UpstreamReference
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.event.entity.PlayerDeathEvent
 import java.io.File
 
 class SurvivalPlayer(
@@ -56,10 +55,10 @@ class SurvivalPlayer(
         if (::bio.isInitialized) return
 
         val bioType = when (name) {
-            in Config.defaultHumans -> {
+            in SurvivalConfig.defaultHumans -> {
                 Bio.Type.HUMAN
             }
-            in Config.defaultSuperZombies -> {
+            in SurvivalConfig.defaultSuperZombies -> {
                 Bio.Type.SUPER_ZOMBIE
             }
             else -> {
@@ -78,6 +77,7 @@ class SurvivalPlayer(
 
     internal fun unload() {
         save()
+        bio.onDetach()
         valid = false
         playerRef.clear()
     }

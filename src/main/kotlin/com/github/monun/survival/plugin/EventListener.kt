@@ -2,12 +2,13 @@ package com.github.monun.survival.plugin
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent
 import com.github.monun.survival.Bio
-import com.github.monun.survival.Config
+import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
 import com.github.monun.survival.survival
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.md_5.bungee.api.ChatColor
 import org.bukkit.Location
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -35,15 +36,19 @@ class EventListener(
         val player = event.player
 
         if (!player.hasPlayedBefore()) {
-            player.teleport(player.world.worldBorder.center.random(Config.worldSize / 2.0))
+            player.teleport(player.world.worldBorder.center.random(SurvivalConfig.worldSize / 2.0))
         }
 
         survival.loadPlayer(event.player)
+
+        event.joinMessage(null)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerQuit(event: PlayerQuitEvent) {
         survival.unloadPlayer(event.player)
+
+        event.quitMessage(null)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -70,7 +75,7 @@ class EventListener(
     @EventHandler(ignoreCancelled = true)
     fun onPlayerRespawn(event: PlayerRespawnEvent) {
         val loc = event.respawnLocation
-        event.respawnLocation = loc.world.worldBorder.center.random(Config.worldSize / 2.0)
+        event.respawnLocation = loc.world.worldBorder.center.random(SurvivalConfig.worldSize / 2.0)
     }
 
     @EventHandler
@@ -83,7 +88,7 @@ class EventListener(
         event.setHidePlayers(true)
         event.maxPlayers = 0
         event.numPlayers = 0
-        event.motd(Component.text().color(TextColor.color(0xDD0000)).content("S U R V I V A L").build())
+        event.motd(Component.text().color(TextColor.color(0xDD0000)).content("${ChatColor.BOLD}S U R V I V A L").build())
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -92,7 +97,7 @@ class EventListener(
         val entity = event.entity; if (entity !is LivingEntity) return
         val boots = entity.equipment?.boots
 
-        var bootsDamage = event.damage * Config.bootsFallDamage
+        var bootsDamage = event.damage * SurvivalConfig.bootsFallDamage
 
         if (boots != null) {
             val bootsMeta = boots.itemMeta
@@ -113,7 +118,7 @@ class EventListener(
             entity.addPotionEffect(
                 PotionEffect(
                     PotionEffectType.SLOW,
-                    (bootsDamage / Config.bootsFallDamage).toInt(),
+                    (bootsDamage / SurvivalConfig.bootsFallDamage).toInt(),
                     0, true, true, true
                 )
             )

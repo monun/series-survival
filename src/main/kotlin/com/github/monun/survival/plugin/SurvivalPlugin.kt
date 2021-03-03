@@ -1,7 +1,7 @@
 package com.github.monun.survival.plugin
 
 import com.github.monun.kommand.kommand
-import com.github.monun.survival.Config
+import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
 import com.github.monun.survival.SurvivalItem
 import com.github.monun.tap.event.EntityEventManager
@@ -22,6 +22,9 @@ class SurvivalPlugin : JavaPlugin() {
     private lateinit var survival: Survival
 
     override fun onEnable() {
+        val configFile = File(dataFolder, "config.yml")
+        SurvivalConfig.load(configFile)
+
         setupRecipe()
         setupCommands()
         setupWorlds()
@@ -44,7 +47,7 @@ class SurvivalPlugin : JavaPlugin() {
                 this@SurvivalPlugin,
                 TickTask(
                     logger,
-                    File(dataFolder, "config.yml"),
+                    configFile,
                     fakeEntityServerForZombie,
                     fakeEntityServerForHuman,
                     survival
@@ -101,7 +104,7 @@ class SurvivalPlugin : JavaPlugin() {
         server.worlds.first().let { world ->
             world.worldBorder.apply {
                 center = Location(world, 0.0, 0.0, 0.0)
-                size = Config.worldSize
+                size = SurvivalConfig.worldSize
                 damageAmount = 0.0
             }
         }

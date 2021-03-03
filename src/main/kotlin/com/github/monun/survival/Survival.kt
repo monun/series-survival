@@ -34,6 +34,9 @@ class Survival(
     internal fun unload() {
         Bukkit.getOnlinePlayers().forEach(this::unloadPlayer)
         instanceRef.clear()
+        fakeEntityServerForZombie.shutdown()
+        fakeEntityServerForHuman.shutdown()
+        entityEventManager.unregisterAll()
     }
 
     internal fun loadPlayer(player: Player) {

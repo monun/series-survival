@@ -1,5 +1,6 @@
 package com.github.monun.survival
 
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import com.github.monun.tap.effect.playFirework
 import com.github.monun.tap.event.EntityProvider
 import com.github.monun.tap.event.RegisteredEntityListener
@@ -25,6 +26,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.CompassMeta
 import org.bukkit.potion.PotionEffect
@@ -62,8 +64,8 @@ abstract class Bio(
                         }
             }
 
-            fun byKey(key: String): Type {
-                return requireNotNull(BY_KEY[key]) { "Unknown type key $key" }
+            fun byKey(key: String): Type? {
+                return BY_KEY[key]
             }
         }
     }
@@ -73,7 +75,7 @@ abstract class Bio(
 
         fun load(config: ConfigurationSection, player: SurvivalPlayer): Bio {
             val key = requireNotNull(config.getString(KEY_TYPE)) { " Unknown Bio key $KEY_TYPE" }
-            val type = Type.byKey(key)
+            val type = requireNotNull(Type.byKey(key)) { "Unknown type key $key" }
 
             return type.creator().apply {
                 initialize(player)
@@ -120,7 +122,7 @@ abstract class Bio(
         private var zombieFlag: FakeEntity? = null
 
         private val flagLocation: Location
-            get() = player.eyeLocation.apply { y += 1.0 }
+            get() = player.eyeLocation
 
         private var registereListener: RegisteredEntityListener? = null
 
@@ -173,7 +175,7 @@ abstract class Bio(
         }
 
         override fun applyAttribute() {
-            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = Config.humanHealth
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = SurvivalConfig.humanHealth
         }
 
         @EventHandler
@@ -213,7 +215,7 @@ abstract class Bio(
         @EventHandler
         fun onPlayerDeath(event: PlayerDeathEvent) {
             val name = player.name
-            val newBioType = if (name in Config.defaultSuperZombies) Type.SUPER_ZOMBIE else Type.ZOMBIE
+            val newBioType = if (name in SurvivalConfig.defaultSuperZombies) Type.SUPER_ZOMBIE else Type.ZOMBIE
 
             survivor.setBio(newBioType)
 
@@ -261,7 +263,7 @@ abstract class Bio(
                 if (randomSuperZombie != null) {
                     event.item!!.run {
                         amount -= 1
-                        player.setCooldown(type, Config.compassCooldownTick)
+                        player.setCooldown(type, SurvivalConfig.compassCooldownTick)
                     }
                     val p = randomSuperZombie.player
                     p.sendMessage(
@@ -290,8 +292,12 @@ abstract class Bio(
         override fun onDetach() {
             val player = player
 
-            for (activePotionEffect in player.activePotionEffects) {
-                player.removePotionEffect(activePotionEffect.type)
+            for (type in PotionEffectType.values()) {
+                player.removePotionEffect(type)
+            }
+
+            for (wandHandler in wandHandlers) {
+                player.setCooldown(wandHandler.first.type, 0)
             }
 
             survivor.survival.let { survival ->
@@ -340,7 +346,7 @@ abstract class Bio(
                         PotionEffect(
                             PotionEffectType.SLOW_DIGGING,
                             100,
-                            Config.fatigueAmplifier,
+                            SurvivalConfig.fatigueAmplifier,
                             false,
                             false,
                             false
@@ -351,7 +357,7 @@ abstract class Bio(
         }
 
         override fun applyAttribute() {
-            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = Config.zombieHealth
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = SurvivalConfig.zombieHealth
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -364,7 +370,7 @@ abstract class Bio(
         @EventHandler(ignoreCancelled = true)
         @TargetEntity(EntityProvider.EntityDamageByEntity.Damager::class)
         fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (Config.poisonDuration <= 0) return
+            if (SurvivalConfig.poisonDuration <= 0) return
             val victim = event.entity; if (victim !is LivingEntity) return
 
             if (victim is Player) {
@@ -379,8 +385,8 @@ abstract class Bio(
             victim.addPotionEffect(
                 PotionEffect(
                     PotionEffectType.POISON,
-                    Config.poisonDuration,
-                    Config.poisonAmplifier,
+                    SurvivalConfig.poisonDuration,
+                    SurvivalConfig.poisonAmplifier,
                     true,
                     true,
                     true
@@ -430,6 +436,14 @@ abstract class Bio(
                 }
             }
         }
+
+        fun resetCooldown() {
+            val player = player
+
+            for (wandHandler in wandHandlers) {
+                player.setCooldown(wandHandler.first.type, 0)
+            }
+        }
     }
 
     class SuperZombie : Zombie(Type.SUPER_ZOMBIE) {
@@ -445,7 +459,7 @@ abstract class Bio(
             registerWandHandler(SurvivalItem.wandSpector) { event ->
                 survivor.survival.players.filter { it != survivor && it.bio is Human }.randomOrNull()?.let { target ->
                     val player = player
-                    spectorTicks = Config.spectorDurationTick
+                    spectorTicks = SurvivalConfig.spectorDurationTick
                     spectorLocation = player.location
                     player.gameMode = GameMode.SPECTATOR
                     player.teleport(target.player)
@@ -453,18 +467,20 @@ abstract class Bio(
 
                     event.item!!.apply {
                         amount -= 1
-                        player.setCooldown(type, Config.spectorCooldownTick)
+                        player.setCooldown(type, SurvivalConfig.spectorCooldownTick)
                     }
                 }
             }
 
             registerWandHandler(SurvivalItem.wandSummon) { event ->
-                survivor.survival.players.asSequence().filter { it.bio is Zombie && it != survivor }.sortedBy { other ->
-                    val a = player
-                    val b = other.player
-                    if (a.world != b.world) Double.POSITIVE_INFINITY
-                    else a.location.distanceSquared(b.location)
-                }.take(Config.summonCount).toList().takeIf { it.isNotEmpty() }?.let { list ->
+                survivor.survival.players.asSequence()
+                    .filter { it.bio is Zombie && it != survivor && it.player.gameMode != GameMode.SPECTATOR }
+                    .sortedBy { other ->
+                        val a = player
+                        val b = other.player
+                        if (a.world != b.world) Double.POSITIVE_INFINITY
+                        else a.location.distanceSquared(b.location)
+                    }.take(SurvivalConfig.summonCount).toList().takeIf { it.isNotEmpty() }?.let { list ->
                     summonTicks = 0
                     summons.addAll(list)
                     summonYaw = 360.0F / summons.count()
@@ -472,7 +488,7 @@ abstract class Bio(
                     val title = Title.title(
                         Component.text("${ChatColor.RED}GRRRR.."),
                         Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
-                        Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(40), Duration.ofMillis(500))
+                        Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(500))
                     )
 
                     for (survivalPlayer in list) {
@@ -482,7 +498,7 @@ abstract class Bio(
                     event.item!!.apply {
                         amount -= 1
                         val player = player
-                        player.setCooldown(type, Config.summonCooldownTick)
+                        player.setCooldown(type, SurvivalConfig.summonCooldownTick)
                         player.world.strikeLightningEffect(player.location)
                     }
                 }
@@ -490,8 +506,16 @@ abstract class Bio(
         }
 
         override fun onDetach() {
+            super.onDetach()
+
             summonTicks = 0
             summons.clear()
+
+            spectorLocation?.let { loc ->
+                spectorLocation = null
+                player.teleport(loc)
+                player.gameMode = GameMode.SURVIVAL
+            }
         }
 
         override fun onUpdate() {
@@ -511,9 +535,10 @@ abstract class Bio(
                         val summon = summons.removeLast()
 
                         if (summon.valid) {
-                            val loc = player.location.apply {
+                            val loc = player.location.run {
                                 yaw = summons.count() * summonYaw
-                                add(direction.multiply(16.0)).toHighestLocation().add(0.5, 0.5, 0.5)
+                                add(direction.multiply(16.0))
+                                world.getHighestBlockAt(this).location.add(0.5, 1.0, 0.5)
                             }
 
                             summon.player.teleport(loc)
@@ -529,7 +554,9 @@ abstract class Bio(
 
             spectorLocation?.let { loc ->
                 if (--spectorTicks <= 0) {
+                    spectorLocation = null
                     player.teleport(loc)
+                    player.gameMode = GameMode.SURVIVAL
                 }
             }
 
@@ -542,7 +569,7 @@ abstract class Bio(
                     val meta = item.itemMeta as CompassMeta
                     val displayName = meta.displayName() ?: continue
                     val lore = meta.lore()?.firstOrNull() ?: continue
-                    val removeTime = (lore as TextComponent).content().toLong() + Config.compassDurationTime
+                    val removeTime = (lore as TextComponent).content().toLong() + SurvivalConfig.compassDurationTime
 
                     if (removeTime < System.currentTimeMillis()) {
                         item.amount = 0
@@ -558,7 +585,21 @@ abstract class Bio(
         }
 
         override fun applyAttribute() {
-            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = Config.superZombieHealth
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = SurvivalConfig.superZombieHealth
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        fun onPlayerStopSpectatingEntity(event: PlayerStopSpectatingEntityEvent) {
+            if (this.spectorLocation != null) {
+                event.isCancelled = true
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        fun onPlayerTeleport(event: PlayerTeleportEvent) {
+            if (spectorLocation != null && event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
+                event.isCancelled = true
+            }
         }
     }
 }
