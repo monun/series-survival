@@ -18,6 +18,7 @@ jar_url="https://papermc.io/api/v1/paper/$version/latest/download"
 download_plugins=(
     'https://github.com/monun/kotlin-plugin/releases/latest/download/Kotlin-1.4.31.jar'
     'https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar'
+    'https://media.forgecdn.net/files/3209/364/worldedit-bukkit-7.2.3.jar'
 )
 
 project_folder=$(pwd)
