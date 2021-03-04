@@ -2,14 +2,15 @@ package com.github.monun.survival.plugin
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent
 import com.github.monun.survival.Bio
-import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
+import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.survival
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -17,6 +18,8 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.inventory.InventoryPickupItemEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -88,7 +91,9 @@ class EventListener(
         event.setHidePlayers(true)
         event.maxPlayers = 0
         event.numPlayers = 0
-        event.motd(Component.text().color(TextColor.color(0xDD0000)).content("${ChatColor.BOLD}S U R V I V A L").build())
+        event.motd(
+            Component.text().color(TextColor.color(0xDD0000)).content("${ChatColor.BOLD}S U R V I V A L").build()
+        )
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -129,6 +134,13 @@ class EventListener(
         }
 
         event.damage = 0.0
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onInventoryPickup(event: InventoryPickupItemEvent) {
+        if (event.item.itemStack.type == Material.TOTEM_OF_UNDYING && event.inventory.type == InventoryType.HOPPER) {
+            event.isCancelled = true
+        }
     }
 }
 
