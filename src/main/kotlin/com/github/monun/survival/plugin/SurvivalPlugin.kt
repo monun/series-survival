@@ -104,10 +104,11 @@ class SurvivalPlugin : JavaPlugin() {
             world.setGameRule(GameRule.DO_FIRE_TICK, false)
         }
 
-        server.worlds.first().let { world ->
+        //world, world_nether
+        server.worlds.take(2).forEachIndexed { index, world ->
             world.worldBorder.apply {
                 center = Location(world, 0.0, 0.0, 0.0)
-                size = SurvivalConfig.worldSize
+                size = SurvivalConfig.worldSize * index * 8 // 네더일경우 8배
                 damageAmount = 0.0
             }
         }
