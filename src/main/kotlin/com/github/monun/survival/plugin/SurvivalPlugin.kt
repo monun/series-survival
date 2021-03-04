@@ -105,10 +105,10 @@ class SurvivalPlugin : JavaPlugin() {
         }
 
         //world, world_nether
-        server.worlds.take(2).forEachIndexed { index, world ->
+        server.worlds.take(2).forEach { world ->
             world.worldBorder.apply {
                 center = Location(world, 0.0, 0.0, 0.0)
-                size = SurvivalConfig.worldSize * index * 8 // 네더일경우 8배
+                size = SurvivalConfig.worldSize
                 damageAmount = 0.0
             }
         }
