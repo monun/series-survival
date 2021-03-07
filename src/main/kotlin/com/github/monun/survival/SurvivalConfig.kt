@@ -2,7 +2,9 @@ package com.github.monun.survival
 
 import com.github.monun.tap.config.Config
 import com.github.monun.tap.config.computeConfig
+import org.bukkit.Material
 import java.io.File
+import java.util.*
 
 object SurvivalConfig {
     var bootsFallSlow = 4
@@ -13,27 +15,25 @@ object SurvivalConfig {
     @Config
     var spectorDurationTick = 200
     @Config
-    var summonCooldownTick = 20 * 60 * 10
+    var summonCooldownTick = 20L * 60L * 1L
     @Config
     var summonCount = 5
     @Config
-    var spectorCooldownTick = 20 * 60 * 1
+    var spectorCooldownTick = 20L * 60L * 1L
     @Config
-    var compassCooldownTick = 20 * 60 * 30
+    var navigationCooldown = 20L * 60L * 1L
     @Config
-    var worldSize = 4000.0
+    var worldSize = 2000.0
     @Config
     var humanHealth = 20.0
     @Config
-    var zombieHealth = 40.0
+    var zombieHealth = 20.0
     @Config
     var superZombieHealth = 10.0
     @Config
-    var poisonDuration = 100
+    var witherAmplifier = 0
     @Config
-    var poisonAmplifier = 0
-    @Config
-    var fatigueAmplifier = 0
+    var witherDuration = 100
     @Config
     var zombieDamage = 0.5
     @Config
@@ -50,7 +50,9 @@ object SurvivalConfig {
         "j2_mong",
         "I_6ix",
         "ryu_96",
-        "komq"
+        "komq",
+        "lotear",
+        "Kin_A"
     )
     @Config
     var defaultSuperZombieList = arrayListOf(
@@ -58,14 +60,26 @@ object SurvivalConfig {
         "ehdgh141",
         "komq"
     )
+    @Config
+    var zombieUncraftableList = listOf(
+        Material.SHIELD,
+        Material.LEATHER_CHESTPLATE,
+        Material.LEATHER_BOOTS,
+        Material.IRON_CHESTPLATE,
+        Material.GOLDEN_CHESTPLATE,
+        Material.GOLDEN_LEGGINGS,
+        Material.IRON_BOOTS
+    ).map { it.name }
 
     lateinit var defaultHumans: Set<String>
     lateinit var defaultSuperZombies: Set<String>
+    lateinit var zombieUncraftables: EnumSet<Material>
 
     fun load(configFile: File) {
         computeConfig(configFile)
 
         defaultHumans = defaultHumanList.toSortedSet(String.CASE_INSENSITIVE_ORDER)
         defaultSuperZombies = defaultSuperZombieList.toSortedSet(String.CASE_INSENSITIVE_ORDER)
+        zombieUncraftables = EnumSet.copyOf(zombieUncraftableList.map { Material.valueOf(it.toUpperCase()) })
     }
 }

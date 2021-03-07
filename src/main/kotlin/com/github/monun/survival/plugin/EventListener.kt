@@ -1,9 +1,10 @@
 package com.github.monun.survival.plugin
 
+import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent
-import com.github.monun.survival.Bio
 import com.github.monun.survival.Survival
 import com.github.monun.survival.SurvivalConfig
+import com.github.monun.survival.Whitelist
 import com.github.monun.survival.survival
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
@@ -12,19 +13,16 @@ import net.md_5.bungee.api.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.LivingEntity
-import org.bukkit.entity.Player
+import org.bukkit.entity.Zombie
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.inventory.InventoryPickupItemEvent
 import org.bukkit.event.inventory.InventoryType
-import org.bukkit.event.player.PlayerCommandPreprocessEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.event.player.PlayerRespawnEvent
-import org.bukkit.event.world.PortalCreateEvent
+import org.bukkit.event.player.*
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -34,6 +32,13 @@ import kotlin.random.Random.Default.nextDouble
 class EventListener(
     private val survival: Survival
 ) : Listener {
+    @EventHandler
+    fun onAsync(event: AsyncPlayerPreLoginEvent) {
+        val name = event.name
+        if (name in SurvivalConfig.defaultHumans || name in Whitelist.allows) return
+        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("다음 기회에 ㅜㅜ"))
+    }
+
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
@@ -64,16 +69,16 @@ class EventListener(
         if (!event.player.isOp) event.isCancelled = true
     }
 
-    @EventHandler(ignoreCancelled = true)
-    fun onCreatePortal(event: PortalCreateEvent) {
-        event.entity?.let { entity ->
-            if (entity is Player && entity.survival().bio is Bio.Human) {
-                return
-            }
-        }
-
-        event.isCancelled = true
-    }
+//    @EventHandler(ignoreCancelled = true)
+//    fun onCreatePortal(event: PortalCreateEvent) {
+//        event.entity?.let { entity ->
+//            if (entity is Player && entity.survival().bio is Bio.Human) {
+//                return
+//            }
+//        }
+//
+//        event.isCancelled = true
+//    }
 
     @EventHandler(ignoreCancelled = true)
     fun onPlayerRespawn(event: PlayerRespawnEvent) {
@@ -141,6 +146,25 @@ class EventListener(
         if (event.item.itemStack.type == Material.TOTEM_OF_UNDYING && event.inventory.type == InventoryType.HOPPER) {
             event.isCancelled = true
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onCreatureSpawn(event: PlayerNaturallySpawnCreaturesEvent) {
+        if (event.player.survival().bio is Zombie) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onBlockBreak(event: BlockBreakEvent) {
+        if (event.block.type == Material.SPAWNER && event.player.survival().bio is Zombie) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onPlayerItemConsume(event: PlayerItemConsumeEvent) {
+        event.isCancelled = true
     }
 }
 

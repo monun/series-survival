@@ -4,6 +4,7 @@ import com.github.monun.kommand.kommand
 import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
 import com.github.monun.survival.SurvivalItem
+import com.github.monun.survival.Whitelist
 import com.github.monun.tap.event.EntityEventManager
 import com.github.monun.tap.fake.FakeEntityServer
 import org.bukkit.GameRule
@@ -24,6 +25,7 @@ class SurvivalPlugin : JavaPlugin() {
     override fun onEnable() {
         val configFile = File(dataFolder, "config.yml")
         SurvivalConfig.load(configFile)
+        Whitelist.load(File(dataFolder, "whitelist.txt"))
 
         setupRecipe()
         setupCommands()
@@ -79,12 +81,12 @@ class SurvivalPlugin : JavaPlugin() {
                     "DEF",
                     "GHI"
                 )
-                setIngredient('A', Material.GLISTERING_MELON_SLICE)
-                setIngredient('B', Material.GOLDEN_CARROT)
+                setIngredient('A', Material.GOLDEN_CARROT)
+                setIngredient('B', Material.GLISTERING_MELON_SLICE)
                 setIngredient('C', Material.GOLDEN_APPLE)
-                setIngredient('D', Material.SLIME_BALL)
+                setIngredient('D', Material.ZOMBIE_HEAD)
                 setIngredient('E', Material.GLASS_BOTTLE)
-                setIngredient('F', Material.MAGMA_CREAM)
+                setIngredient('F', Material.BLAZE_ROD)
                 setIngredient('G', Material.RABBIT_FOOT)
                 setIngredient('H', Material.NAUTILUS_SHELL)
                 setIngredient('I', Material.PHANTOM_MEMBRANE)
@@ -95,11 +97,12 @@ class SurvivalPlugin : JavaPlugin() {
     private fun setupWorlds() {
         for (world in server.worlds) {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
-            world.setGameRule(GameRule.REDUCED_DEBUG_INFO, true)
+            if (world.name != "world_nether") // 네더일경우 멀리 갔을때 포탈 작용안함
+                world.setGameRule(GameRule.REDUCED_DEBUG_INFO, true)
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false)
             world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true)
             world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false)
-            world.setGameRule(GameRule.SPAWN_RADIUS, 5)
+            world.setGameRule(GameRule.SPAWN_RADIUS, 2)
             world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             world.setGameRule(GameRule.DO_FIRE_TICK, false)
         }

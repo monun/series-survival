@@ -1,7 +1,5 @@
 package com.github.monun.survival
 
-import net.kyori.adventure.text.Component
-import net.md_5.bungee.api.ChatColor
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
@@ -10,7 +8,7 @@ object SurvivalItem {
 
     val wandNavigate = ItemStack(Material.GOLD_INGOT)
 
-    val wandSpector = ItemStack(Material.DIAMOND)
+    val wandSpector = ItemStack(Material.EMERALD)
 
-    val wandSummon = ItemStack(Material.EMERALD)
+    val wandSummon = ItemStack(Material.DIAMOND)
 }

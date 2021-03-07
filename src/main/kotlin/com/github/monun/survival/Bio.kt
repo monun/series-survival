@@ -1,6 +1,7 @@
 package com.github.monun.survival
 
 import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
+import com.github.monun.survival.util.Ticks
 import com.github.monun.tap.effect.playFirework
 import com.github.monun.tap.event.EntityProvider
 import com.github.monun.tap.event.RegisteredEntityListener
@@ -22,12 +23,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.*
-import org.bukkit.event.inventory.InventoryOpenEvent
-import org.bukkit.event.inventory.InventoryType
-import org.bukkit.event.player.PlayerAttemptPickupItemEvent
-import org.bukkit.event.player.PlayerInteractEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerTeleportEvent
+import org.bukkit.event.inventory.CraftItemEvent
+import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.CompassMeta
 import org.bukkit.potion.PotionEffect
@@ -36,6 +33,7 @@ import org.bukkit.scoreboard.Team
 import org.bukkit.util.EulerAngle
 import java.time.Duration
 import java.util.*
+import kotlin.math.max
 import kotlin.random.Random.Default.nextInt
 
 abstract class Bio(
@@ -237,7 +235,22 @@ abstract class Bio(
     open class Zombie(type: Type = Type.ZOMBIE) : Bio(type), Listener {
         internal var ticks = 0
         private var registeredListener: RegisteredEntityListener? = null
-        private val wandHandlers = ArrayList<Pair<ItemStack, (PlayerInteractEvent) -> Unit>>()
+        private val wands = ArrayList<Wand>()
+
+        inner class Wand(
+            val name: String,
+            val itemStack: ItemStack,
+            val action: (PlayerInteractEvent, Wand) -> Unit
+        ) {
+            var cooldown = 0L
+                get() {
+                    return max(0L, field - Ticks.currentTicks())
+                }
+                set(value) {
+                    field = Ticks.currentTicks() + value
+                    survivor.player.setCooldown(itemStack.type, value.toInt())
+                }
+        }
 
         override val team: Team
             get() {
@@ -251,12 +264,16 @@ abstract class Bio(
                 }
             }
 
-        protected fun registerWandHandler(itemStack: ItemStack, handler: (event: PlayerInteractEvent) -> Unit) {
-            wandHandlers.add(itemStack to handler)
+        protected fun registerWandHandler(
+            name: String,
+            itemStack: ItemStack,
+            handler: (event: PlayerInteractEvent, wand: Wand) -> Unit
+        ) {
+            wands.add(Wand(name, itemStack, handler))
         }
 
         override fun onInitialize() {
-            registerWandHandler(SurvivalItem.wandNavigate) { event ->
+            registerWandHandler("navigation", SurvivalItem.wandNavigate) { event, wand ->
                 val randomSuperZombie =
                     survivor.survival.players.asSequence().filter { it.bio is SuperZombie && it != survivor }.toList()
                         .randomOrNull()
@@ -264,8 +281,9 @@ abstract class Bio(
                 if (randomSuperZombie != null) {
                     event.item!!.run {
                         amount -= 1
-                        player.setCooldown(type, SurvivalConfig.compassCooldownTick)
+                        wand.cooldown = SurvivalConfig.navigationCooldown
                     }
+                    player.sendMessage(Component.text("${randomSuperZombie.name}(이)에게 위치 추적기를 전달했습니다"))
                     val p = randomSuperZombie.player
                     p.sendMessage(
                         Component.text("위치 추적기가 도착했습니다.")
@@ -277,7 +295,9 @@ abstract class Bio(
                             isLodestoneTracked = false
                             lodestone = player.location
                         }
-                    })
+                    }).apply {
+                        pickupDelay = 0
+                    }
                 }
             }
         }
@@ -302,42 +322,36 @@ abstract class Bio(
                 player.removePotionEffect(type)
             }
 
-            for (wandHandler in wandHandlers) {
-                player.setCooldown(wandHandler.first.type, 0)
+            for (wand in wands) {
+                player.setCooldown(wand.itemStack.type, 0)
             }
 
             survivor.survival.fakeEntityServerForZombie.removePlayer(player)
-
-
         }
 
         override fun onLoad(config: ConfigurationSection) {
             config.getConfigurationSection("cooldown")?.let { section ->
-                for (wandHandler in wandHandlers) {
-                    val type = wandHandler.first.type
-                    player.setCooldown(type, section.getInt(type.name))
+                for (wand in wands) {
+                    wand.cooldown = section.getLong(wand.name)
                 }
             }
         }
 
         override fun onSave(config: ConfigurationSection) {
             config.createSection("cooldown").let { section ->
-                for (wandHandler in wandHandlers) {
-                    val type = wandHandler.first.type
-                    section[type.name] = player.getCooldown(type)
+                for (wand in wands) {
+                    section[wand.name] = wand.cooldown
                 }
             }
         }
 
         override fun onUpdate() {
-            ticks++
-
-            if (ticks % 20 == 0) {
+            if (ticks % 200 == 0) {
                 player.apply {
                     addPotionEffect(
                         PotionEffect(
                             PotionEffectType.POISON,
-                            100,
+                            32768,
                             0,
                             false,
                             false,
@@ -346,16 +360,15 @@ abstract class Bio(
                     )
                     addPotionEffect(
                         PotionEffect(
-                            PotionEffectType.SLOW_DIGGING,
-                            100,
-                            SurvivalConfig.fatigueAmplifier,
-                            false,
-                            false,
-                            false
+                            PotionEffectType.NIGHT_VISION,
+                            32768,
+                            0,
+                            false, false, false
                         )
                     )
                 }
             }
+            ticks++
         }
 
         override fun applyAttribute() {
@@ -372,7 +385,6 @@ abstract class Bio(
         @EventHandler(ignoreCancelled = true)
         @TargetEntity(EntityProvider.EntityDamageByEntity.Damager::class)
         fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-            if (SurvivalConfig.poisonDuration <= 0) return
             val victim = event.entity; if (victim !is LivingEntity) return
 
             if (victim is Player) {
@@ -384,24 +396,23 @@ abstract class Bio(
                 }
             }
 
-            event.damage /= SurvivalConfig.zombieDamage
+            if (victim.killer !== player) {
+                victim.noDamageTicks = 0
+            }
 
-            victim.addPotionEffect(
-                PotionEffect(
-                    PotionEffectType.POISON,
-                    SurvivalConfig.poisonDuration,
-                    SurvivalConfig.poisonAmplifier,
-                    true,
-                    true,
-                    true
+            event.damage *= SurvivalConfig.zombieDamage
+
+            if (SurvivalConfig.witherDuration > 0) {
+                victim.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.WITHER,
+                        SurvivalConfig.witherDuration,
+                        SurvivalConfig.witherAmplifier,
+                        true,
+                        true,
+                        true
+                    )
                 )
-            )
-        }
-
-        @EventHandler(ignoreCancelled = true)
-        fun onInventoryOpen(event: InventoryOpenEvent) {
-            if (event.inventory.type == InventoryType.WORKBENCH) {
-                event.isCancelled = true
             }
         }
 
@@ -434,9 +445,10 @@ abstract class Bio(
             val item = event.item ?: return
             val action = event.action
 
-            if ((action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) && player.getCooldown(item.type) <= 0) {
-                wandHandlers.find { it.first.isSimilar(item) }?.let { found ->
-                    found.second(event)
+            if ((action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
+                wands.find { it.itemStack.isSimilar(item) }?.let { found ->
+                    if (found.cooldown <= 0)
+                        found.action(event, found)
                 }
             }
         }
@@ -454,11 +466,25 @@ abstract class Bio(
             }
         }
 
-        fun resetCooldown() {
-            val player = player
+        @EventHandler
+        fun onPlayerChangedWorld(event: PlayerChangedWorldEvent) {
+            wands.forEach { it.cooldown = it.cooldown } //refresh client
+        }
 
-            for (wandHandler in wandHandlers) {
-                player.setCooldown(wandHandler.first.type, 0)
+        @EventHandler(ignoreCancelled = true)
+        fun onCraftItem(event: CraftItemEvent) {
+            val item = event.currentItem ?: return
+            val type = item.type
+
+            if ("DIAMOND" in type.name || type in SurvivalConfig.zombieUncraftables) {
+                event.isCancelled = true
+                player.sendMessage(Component.text("이 아이템은 제작 할 수 없습니다"))
+            }
+        }
+
+        fun resetCooldown() {
+            for (wand in wands) {
+                wand.cooldown = 0
             }
         }
     }
@@ -473,7 +499,7 @@ abstract class Bio(
         override fun onInitialize() {
             super.onInitialize()
 
-            registerWandHandler(SurvivalItem.wandSpector) { event ->
+            registerWandHandler("spector", SurvivalItem.wandSpector) { event, wand ->
                 survivor.survival.players.filter { it != survivor && it.bio is Human }.randomOrNull()?.let { target ->
                     val player = player
                     spectorTicks = SurvivalConfig.spectorDurationTick
@@ -484,43 +510,45 @@ abstract class Bio(
 
                     event.item!!.apply {
                         amount -= 1
-                        player.setCooldown(type, SurvivalConfig.spectorCooldownTick)
+                        wand.cooldown = SurvivalConfig.spectorCooldownTick
+                    }
+
+                    spectorLocation!!.run {
+                        world.spawnParticle(
+                            Particle.CLOUD,
+                            x, y, z,
+                            100,
+                            0.0, 0.0, 0.0, 0.5, null, true
+                        )
                     }
                 }
             }
 
-            registerWandHandler(SurvivalItem.wandSummon) { event ->
-                if (player.world.name.endsWith("nether")) return@registerWandHandler
-
+            registerWandHandler("summon", SurvivalItem.wandSummon) { event, wand ->
                 survivor.survival.players.asSequence()
                     .filter { it.bio is Zombie && it != survivor && it.player.gameMode != GameMode.SPECTATOR }
-                    .sortedBy { other ->
-                        val a = player
-                        val b = other.player
-                        if (a.world != b.world) Double.POSITIVE_INFINITY
-                        else a.location.distanceSquared(b.location)
-                    }.take(SurvivalConfig.summonCount).toList().takeIf { it.isNotEmpty() }?.let { list ->
-                    summonTicks = 0
-                    summons.addAll(list)
-                    summonYaw = 360.0F / summons.count()
+                    .shuffled().take(SurvivalConfig.summonCount).toList().takeIf { it.isNotEmpty() }?.let { list ->
+                        summonTicks = 0
+                        summons.addAll(list)
+                        summonYaw = 360.0F / summons.count()
 
-                    val title = Title.title(
-                        Component.text("${ChatColor.RED}GRRRR.."),
-                        Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
-                        Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofSeconds(1))
-                    )
+                        val title = Title.title(
+                            Component.text("${ChatColor.RED}GRRRR.."),
+                            Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
+                            Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofSeconds(1))
+                        )
 
-                    for (survivalPlayer in list) {
-                        survivalPlayer.player.showTitle(title)
+                        for (survivalPlayer in list) {
+                            survivalPlayer.player.showTitle(title)
+                        }
+
+                        event.item!!.apply {
+                            amount -= 1
+                            val player = player
+                            wand.cooldown = SurvivalConfig.summonCooldownTick
+                            player.world.strikeLightningEffect(player.location)
+                        }
                     }
-
-                    event.item!!.apply {
-                        amount -= 1
-                        val player = player
-                        player.setCooldown(type, SurvivalConfig.summonCooldownTick)
-                        player.world.strikeLightningEffect(player.location)
-                    }
-                }
             }
         }
 
@@ -538,12 +566,11 @@ abstract class Bio(
         }
 
         override fun onUpdate() {
-            super.onUpdate()
 
             val player = this.player
 
-            if (ticks % 20 == 0) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 100, 0, false, false, false))
+            if (ticks % 200 == 0) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 32768, 0, false, false, false))
             }
 
             if (summons.isNotEmpty()) {
@@ -554,11 +581,7 @@ abstract class Bio(
                         val summon = summons.removeLast()
 
                         if (summon.valid) {
-                            val loc = player.location.run {
-                                yaw = summons.count() * summonYaw
-                                add(direction.multiply(16.0))
-                                world.getHighestBlockAt(this).location.add(0.5, 1.0, 0.5)
-                            }
+                            val loc = player.location
 
                             summon.player.teleport(loc)
                             loc.world.playFirework(
@@ -601,6 +624,8 @@ abstract class Bio(
                     item.itemMeta = meta
                 }
             }
+
+            super.onUpdate()
         }
 
         override fun applyAttribute() {
@@ -629,7 +654,7 @@ class TargetProvider : EntityProvider<EntityTargetLivingEntityEvent> {
     }
 }
 
-class TamerProvider: EntityProvider<EntityTameEvent> {
+class TamerProvider : EntityProvider<EntityTameEvent> {
     override fun getFrom(event: EntityTameEvent): Entity {
         return event.owner.takeIf { it is Entity } as Entity
     }
