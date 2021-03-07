@@ -33,7 +33,7 @@ class EventListener(
     private val survival: Survival
 ) : Listener {
     @EventHandler
-    fun onAsync(event: AsyncPlayerPreLoginEvent) {
+    fun onAsyncPlayerPreLogin(event: AsyncPlayerPreLoginEvent) {
         val name = event.name
         if (name in SurvivalConfig.defaultHumans || name in Whitelist.allows) return
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("다음 기회에 ㅜㅜ"))

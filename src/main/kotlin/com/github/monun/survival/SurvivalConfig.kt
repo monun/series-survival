@@ -37,6 +37,8 @@ object SurvivalConfig {
     @Config
     var zombieDamage = 0.5
     @Config
+    var zombieHeadDrop = 0.05
+    @Config
     var defaultHumanList = arrayListOf(
         "heptagram",
         "Men1",

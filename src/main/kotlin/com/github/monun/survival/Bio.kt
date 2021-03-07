@@ -34,6 +34,7 @@ import org.bukkit.util.EulerAngle
 import java.time.Duration
 import java.util.*
 import kotlin.math.max
+import kotlin.random.Random.Default.nextDouble
 import kotlin.random.Random.Default.nextInt
 
 abstract class Bio(
@@ -479,6 +480,15 @@ abstract class Bio(
             if ("DIAMOND" in type.name || type in SurvivalConfig.zombieUncraftables) {
                 event.isCancelled = true
                 player.sendMessage(Component.text("이 아이템은 제작 할 수 없습니다"))
+            }
+        }
+
+        @EventHandler
+        fun onPlayerDeath(event: PlayerDeathEvent) {
+            println(player.killer)
+
+            if (player.killer != null && nextDouble() < SurvivalConfig.zombieHeadDrop) {
+                event.drops += ItemStack(Material.ZOMBIE_HEAD)
             }
         }
 
