@@ -26,7 +26,6 @@ import org.bukkit.event.entity.*
 import org.bukkit.event.inventory.CraftItemEvent
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.Team
@@ -485,13 +484,35 @@ abstract class Bio(
         fun onPlayerDeath(event: PlayerDeathEvent) {
             if (player.killer != null && nextDouble() < SurvivalConfig.zombieItemDrop) {
                 NamespacedKey.fromString("vaccine")?.let { Bukkit.getRecipe(it) }?.let { recipe ->
-                    recipe as ShapedRecipe
-                    event.drops += recipe.ingredientMap.values.random().clone()
+                    val loc = player.location
+                    val world = loc.world
+                    val biome = world.getBiome(loc.blockX, loc.blockY, loc.blockZ)
+                    val biomeName = biome.name
 
-                    //TODO 지워
-                    println(event.drops)
+                    event.drops += when {
+                        "DESERT" in biomeName -> {
+                            ItemStack(Material.RABBIT_FOOT)
+                        }
+                        "BEACH" in biomeName || "OCEAN" in biomeName -> {
+                            ItemStack(Material.NAUTILUS_SHELL)
+                        }
+                        "nether" in world.name -> {
+                            ItemStack(Material.BLAZE_ROD)
+                        }
+                        "the_end" in world.name -> {
+                            ItemStack(Material.PHANTOM_MEMBRANE)
+                        }
+                        else -> {
+                            when (nextInt(4)) {
+                                0 -> ItemStack(Material.GLISTERING_MELON_SLICE)
+                                1 -> ItemStack(Material.GOLDEN_CARROT)
+                                2 -> ItemStack(Material.GOLDEN_APPLE)
+                                3 -> ItemStack(Material.ZOMBIE_HEAD)
+                                else -> error("???")
+                            }
+                        }
+                    }
                 }
-
             }
         }
 
