@@ -274,7 +274,7 @@ abstract class Bio(
         }
 
         override fun onInitialize() {
-            registerWandHandler("navigation", SurvivalItem.wandNavigate) { event, wand ->
+            if (this !is SuperZombie) registerWandHandler("navigation", SurvivalItem.wandSummon) { event, wand ->
                 val randomSuperZombie =
                     survivor.survival.players.asSequence().filter { it.bio is SuperZombie && it != survivor }.toList()
                         .randomOrNull()
@@ -282,19 +282,17 @@ abstract class Bio(
                 if (randomSuperZombie != null) {
                     event.item!!.run {
                         amount -= 1
-                        wand.cooldown = SurvivalConfig.navigationCooldown
+                        wand.cooldown = SurvivalConfig.summonSuperZombieCooldownTick
                     }
-                    player.sendMessage(Component.text("${randomSuperZombie.name}(이)에게 위치 추적기를 전달했습니다"))
+                    player.sendMessage(Component.text("${randomSuperZombie.name}(이)위치 이동기를 전달했습니다!"))
                     val p = randomSuperZombie.player
                     p.sendMessage(
-                        Component.text("위치 추적기가 도착했습니다.")
+                        Component.text("위치 이동기가 도착했습니다.")
                     )
-                    p.world.dropItemNaturally(p.eyeLocation, ItemStack(Material.COMPASS).apply {
-                        itemMeta = (itemMeta as CompassMeta).apply {
+                    p.world.dropItemNaturally(p.eyeLocation, ItemStack(Material.BOOK).apply {
+                        itemMeta = itemMeta.apply {
                             displayName(Component.text(survivor.name))
                             lore(listOf(Component.text(System.currentTimeMillis())))
-                            isLodestoneTracked = false
-                            lodestone = player.location
                         }
                     }).apply {
                         pickupDelay = 0
@@ -495,6 +493,8 @@ abstract class Bio(
         fun resetCooldown() {
             for (wand in wands) {
                 wand.cooldown = 0
+
+
             }
         }
     }
@@ -536,14 +536,14 @@ abstract class Bio(
 
             registerWandHandler("summon", SurvivalItem.wandSummon) { event, wand ->
                 survivor.survival.players.asSequence()
-                    .filter { it.bio is Zombie && it != survivor && it.player.gameMode != GameMode.SPECTATOR }
+                    .filter { it.bio is Zombie && it.bio !is SuperZombie && it != survivor && it.player.gameMode != GameMode.SPECTATOR }
                     .shuffled().take(SurvivalConfig.summonCount).toList().takeIf { it.isNotEmpty() }?.let { list ->
                         summonTicks = 0
                         summons.addAll(list)
                         summonYaw = 360.0F / summons.count()
 
                         val title = Title.title(
-                            Component.text("${ChatColor.RED}GRRRR.."),
+                            Component.text("${ChatColor.RED}Grrrr.."),
                             Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
                             Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofSeconds(1))
                         )
@@ -617,21 +617,14 @@ abstract class Bio(
             for (i in 0 until 36) {
                 val item = inv.getItem(i)
 
-                if (item != null && item.type == Material.COMPASS && item.hasItemMeta()) {
+                if (item != null && item.type == Material.BOOK && item.hasItemMeta()) {
                     val meta = item.itemMeta as CompassMeta
-                    val displayName = meta.displayName() ?: continue
                     val lore = meta.lore()?.firstOrNull() ?: continue
-                    val removeTime = (lore as TextComponent).content().toLong() + SurvivalConfig.compassDurationTime
+                    val removeTime = (lore as TextComponent).content().toLong() + SurvivalConfig.summonDurationTime
 
                     if (removeTime < System.currentTimeMillis()) {
                         item.amount = 0
                     }
-
-                    val targetName = (displayName as TextComponent).content()
-                    val target = Bukkit.getPlayerExact(targetName) ?: continue
-                    meta.lodestone = target.location
-                    meta.isLodestoneTracked = false
-                    item.itemMeta = meta
                 }
             }
 
@@ -653,6 +646,26 @@ abstract class Bio(
         fun onPlayerTeleport(event: PlayerTeleportEvent) {
             if (spectorLocation != null && event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
                 event.isCancelled = true
+            }
+        }
+
+        @EventHandler
+        fun onPlayerInteract0(event: PlayerInteractEvent) {
+            val item = event.item ?: return
+            val action = event.action
+
+            if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
+                if (item.type == Material.BOOK && item.hasItemMeta()) {
+                    item.itemMeta.displayName()?.let {
+                        Bukkit.getPlayerExact((it as TextComponent).content())
+                    }?.let {
+                        item.amount -= 1
+                        val loc = it.location
+                        this.player.teleport(loc)
+                        loc.world.strikeLightningEffect(loc)
+                        it.sendMessage(Component.text("${this.player.name}(이)가 당신의 소환에 응했습니다!"))
+                    }
+                }
             }
         }
     }

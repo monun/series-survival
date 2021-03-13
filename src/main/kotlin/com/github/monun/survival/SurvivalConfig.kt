@@ -7,37 +7,54 @@ import java.io.File
 import java.util.*
 
 object SurvivalConfig {
+    @Config
     var bootsFallSlow = 4
+
     @Config
     var bootsFallDamage = 6.0
+
     @Config
-    var compassDurationTime = 20000L
+    var summonDurationTime = 20000L
+
     @Config
     var spectorDurationTick = 200
-    @Config
-    var summonCooldownTick = 20L * 60L * 1L
+
     @Config
     var summonCount = 5
+
     @Config
     var spectorCooldownTick = 20L * 60L * 1L
+
     @Config
-    var navigationCooldown = 20L * 60L * 1L
+    var summonSuperZombieCooldownTick = 20L * 60L * 30L
+
+    @Config
+    var summonCooldownTick = 20L * 60L * 5L
+
     @Config
     var worldSize = 2000.0
+
     @Config
     var humanHealth = 20.0
+
     @Config
     var zombieHealth = 20.0
+
     @Config
     var superZombieHealth = 10.0
+
     @Config
     var witherAmplifier = 0
+
     @Config
     var witherDuration = 100
+
     @Config
     var zombieDamage = 0.5
+
     @Config
     var zombieHeadDrop = 0.05
+
     @Config
     var defaultHumanList = arrayListOf(
         "heptagram",
@@ -56,12 +73,14 @@ object SurvivalConfig {
         "lotear",
         "Kin_A"
     )
+
     @Config
     var defaultSuperZombieList = arrayListOf(
         "heptagram",
         "ehdgh141",
         "komq"
     )
+
     @Config
     var zombieUncraftableList = listOf(
         Material.SHIELD,
