@@ -26,7 +26,7 @@ import org.bukkit.event.entity.*
 import org.bukkit.event.inventory.CraftItemEvent
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.CompassMeta
+import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.Team
@@ -483,10 +483,15 @@ abstract class Bio(
 
         @EventHandler
         fun onPlayerDeath(event: PlayerDeathEvent) {
-            println(player.killer)
+            if (player.killer != null && nextDouble() < SurvivalConfig.zombieItemDrop) {
+                NamespacedKey.fromString("vaccine")?.let { Bukkit.getRecipe(it) }?.let { recipe ->
+                    recipe as ShapedRecipe
+                    event.drops += recipe.ingredientMap.values.random().clone()
 
-            if (player.killer != null && nextDouble() < SurvivalConfig.zombieHeadDrop) {
-                event.drops += ItemStack(Material.ZOMBIE_HEAD)
+                    //TODO 지워
+                    println(event.drops)
+                }
+
             }
         }
 
@@ -618,7 +623,7 @@ abstract class Bio(
                 val item = inv.getItem(i)
 
                 if (item != null && item.type == Material.BOOK && item.hasItemMeta()) {
-                    val meta = item.itemMeta as CompassMeta
+                    val meta = item.itemMeta
                     val lore = meta.lore()?.firstOrNull() ?: continue
                     val removeTime = (lore as TextComponent).content().toLong() + SurvivalConfig.summonDurationTime
 
