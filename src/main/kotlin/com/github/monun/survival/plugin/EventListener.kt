@@ -164,7 +164,8 @@ class EventListener(
 
     @EventHandler(ignoreCancelled = true)
     fun onPlayerItemConsume(event: PlayerItemConsumeEvent) {
-        event.isCancelled = true
+        if (event.item.type == Material.MILK_BUCKET)
+            event.isCancelled = true
     }
 }
 
