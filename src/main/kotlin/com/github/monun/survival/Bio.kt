@@ -7,6 +7,7 @@ import com.github.monun.tap.event.EntityProvider
 import com.github.monun.tap.event.RegisteredEntityListener
 import com.github.monun.tap.event.TargetEntity
 import com.github.monun.tap.fake.FakeEntity
+import com.github.monun.tap.fake.FakeEntityServer
 import com.github.monun.tap.ref.UpstreamReference
 import com.google.common.collect.ImmutableSortedMap
 import net.kyori.adventure.text.Component
@@ -26,6 +27,7 @@ import org.bukkit.event.entity.*
 import org.bukkit.event.inventory.CraftItemEvent
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.CompassMeta
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.Team
@@ -519,13 +521,54 @@ abstract class Bio(
         fun resetCooldown() {
             for (wand in wands) {
                 wand.cooldown = 0
-
-
             }
         }
     }
 
     class SuperZombie : Zombie(Type.SUPER_ZOMBIE) {
+        companion object {
+            var targetUUID: UUID? = null
+            var targetPlayer: Player? = null
+                set(value) {
+                    field = value
+                    warningStand.updateEquipment {
+                        helmet = if (value == null) null else ItemStack(Material.ENDER_EYE)
+                    }
+                }
+
+            private lateinit var warningStand: FakeEntity
+
+            internal fun initWarningStand(server: FakeEntityServer) {
+                warningStand = server.spawnEntity(
+                    Bukkit.getWorlds().first().spawnLocation, ArmorStand::class.java
+                ).apply {
+                    updateMetadata<ArmorStand> {
+                        headPose = EulerAngle.ZERO
+                        isMarker = true
+                        isVisible = false
+                        isGlowing = true
+                    }
+                }
+            }
+
+            fun updateTarget() {
+                if (targetPlayer == null) {
+                    targetUUID?.let { Bukkit.getPlayer(it) }?.let { targetPlayer = it }
+                }
+
+                targetPlayer?.let { player ->
+                    if (!player.isOnline) {
+                        targetPlayer = null
+                    } else if (player.survival().bio is Zombie) {
+                        targetUUID = null
+                        targetPlayer = null
+                    } else {
+                        warningStand.moveTo(player.eyeLocation.apply { y -= 1.25 })
+                    }
+                }
+            }
+        }
+
         private var summonYaw = 0F
         private var summonTicks = 0
         private var summons = arrayListOf<SurvivalPlayer>()
@@ -538,6 +581,8 @@ abstract class Bio(
             registerWandHandler("spector", SurvivalItem.wandSpector) { event, wand ->
                 survivor.survival.players.filter { it != survivor && it.bio is Human }.randomOrNull()?.let { target ->
                     val player = player
+                    targetUUID = target.uniqueId
+                    targetPlayer = target.player
                     spectorTicks = SurvivalConfig.spectorDurationTick
                     spectorLocation = player.location
                     player.gameMode = GameMode.SPECTATOR
@@ -557,6 +602,8 @@ abstract class Bio(
                             0.0, 0.0, 0.0, 0.5, null, true
                         )
                     }
+
+                    target.player.sendMessage(Component.text("${ChatColor.RED}슈퍼 좀비가 당신을 추적합니다"))
                 }
             }
 
@@ -602,7 +649,6 @@ abstract class Bio(
         }
 
         override fun onUpdate() {
-
             val player = this.player
 
             if (ticks % 200 == 0) {
@@ -639,17 +685,30 @@ abstract class Bio(
             }
 
             val inv = player.inventory
+            val checkSlot = ticks % 36 // 1 tick 1 slot check
+            inv.getItem(checkSlot)?.let { item ->
+                val type = item.type
+                if (type == Material.BOOK) {
+                    if (item.hasItemMeta()) {
+                        val meta = item.itemMeta
+                        val lore = meta.lore()?.firstOrNull() ?: return@let
+                        val removeTime =
+                            (lore as TextComponent).content().toLong() + SurvivalConfig.summonDurationTime
 
-            for (i in 0 until 36) {
-                val item = inv.getItem(i)
+                        if (removeTime < System.currentTimeMillis()) {
+                            item.amount = 0
+                        }
+                    }
+                } else if (type == Material.COMPASS) {
+                    val targetPlayer = targetPlayer
 
-                if (item != null && item.type == Material.BOOK && item.hasItemMeta()) {
-                    val meta = item.itemMeta
-                    val lore = meta.lore()?.firstOrNull() ?: continue
-                    val removeTime = (lore as TextComponent).content().toLong() + SurvivalConfig.summonDurationTime
-
-                    if (removeTime < System.currentTimeMillis()) {
-                        item.amount = 0
+                    if (targetPlayer == null) {
+                        item.itemMeta = null
+                    } else {
+                        val meta = item.itemMeta as CompassMeta
+                        meta.lodestone = targetPlayer.location
+                        meta.isLodestoneTracked = false
+                        item.itemMeta = meta
                     }
                 }
             }

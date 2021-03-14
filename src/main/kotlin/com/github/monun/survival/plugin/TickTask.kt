@@ -1,5 +1,6 @@
 package com.github.monun.survival.plugin
 
+import com.github.monun.survival.Bio
 import com.github.monun.survival.SurvivalConfig
 import com.github.monun.survival.Survival
 import com.github.monun.tap.fake.FakeEntityServer
@@ -19,6 +20,8 @@ class TickTask(
         for (player in survival.players) {
             player.update()
         }
+
+        Bio.SuperZombie.updateTarget()
 
         fakeEntityServerForZombie.update()
         fakeEntityServerForHuman.update()

@@ -1,10 +1,7 @@
 package com.github.monun.survival.plugin
 
 import com.github.monun.kommand.kommand
-import com.github.monun.survival.SurvivalConfig
-import com.github.monun.survival.Survival
-import com.github.monun.survival.SurvivalItem
-import com.github.monun.survival.Whitelist
+import com.github.monun.survival.*
 import com.github.monun.tap.event.EntityEventManager
 import com.github.monun.tap.fake.FakeEntityServer
 import org.bukkit.GameRule
@@ -42,6 +39,7 @@ class SurvivalPlugin : JavaPlugin() {
             File(dataFolder, "players")
         )
         survival.load()
+        Bio.SuperZombie.initWarningStand(fakeEntityServerForHuman)
 
         server.apply {
             pluginManager.registerEvents(EventListener(survival), this@SurvivalPlugin)
