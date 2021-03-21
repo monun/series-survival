@@ -22,7 +22,7 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
     implementation("com.github.monun:tap:3.4.0")
-    implementation("com.github.monun:kommand:0.7.1")
+    implementation("com.github.monun:kommand:0.8.0")
 
 //    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
 //    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
