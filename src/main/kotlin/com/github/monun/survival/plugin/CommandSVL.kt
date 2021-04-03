@@ -34,6 +34,17 @@ object CommandSVL {
                     }
                 }
             }
+            then("hypervaccine") {
+                require { this is Player }
+                executes { context ->
+                    hyperVaccine(context.sender, listOf(context.sender as Player))
+                }
+                then("player" to target() {it is Player}) {
+                    executes { context ->
+                        hyperVaccine(context.sender, context.parseArgument("player"))
+                    }
+                }
+            }
             then("resetcooldown") {
                 require { this is Player }
                 executes { context ->
@@ -54,6 +65,13 @@ object CommandSVL {
         for (player in players) {
             player.inventory.addItem(SurvivalItem.vaccine.clone())
             sender.sendFeedback("백신을 지급했습니다.")
+        }
+    }
+
+    private fun hyperVaccine(sender: CommandSender, players: List<Player>) {
+        for (player in players) {
+            player.inventory.addItem(SurvivalItem.hyperVaccine.clone())
+            sender.sendFeedback("하이퍼 백신을 지급했습니다.")
         }
     }
 

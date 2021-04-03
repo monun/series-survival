@@ -8,6 +8,21 @@ import java.util.*
 
 object SurvivalConfig {
     @Config
+    var hyperZombieJumpAmplifier = 12
+
+    @Config
+    var hyperZombieJumpTick = 60
+
+    @Config
+    var hyperZombieDamage = 2.0
+
+    @Config
+    var hyperZombieSpeed = 0.3
+
+    @Config
+    var hyperZombieHealth = 40.0
+
+    @Config
     var bootsFallSlow = 4
 
     @Config

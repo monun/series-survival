@@ -6,6 +6,10 @@ version: $version
 commands:
   svl:
     permission: survival.command
+  sacrifice:
+    permission: survival.sacrifice
+  evolve:
+    permission: survival.evolve
 permissions:
   survival.command:
     default: op
