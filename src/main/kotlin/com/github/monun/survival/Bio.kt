@@ -1,5 +1,6 @@
 package com.github.monun.survival
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent
 import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import com.github.monun.survival.util.Ticks
 import com.github.monun.tap.effect.playFirework
@@ -11,9 +12,12 @@ import com.github.monun.tap.fake.FakeEntityServer
 import com.github.monun.tap.ref.UpstreamReference
 import com.google.common.collect.ImmutableSortedMap
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.*
@@ -33,6 +37,8 @@ import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.Team
 import org.bukkit.util.EulerAngle
 import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.*
 import kotlin.math.max
 import kotlin.random.Random.Default.nextDouble
@@ -48,7 +54,8 @@ abstract class Bio(
     ) {
         HUMAN("human", "생존자", ::Human),
         ZOMBIE("zombie", "좀비", ::Zombie),
-        SUPER_ZOMBIE("super_zombie", "슈퍼 좀비", ::SuperZombie);
+        SUPER_ZOMBIE("super_zombie", "슈퍼 좀비", ::SuperZombie),
+        HYPER_ZOMBIE("hyper_zombie", "하이퍼 좀비", ::HyperZombie);
 
         override fun toString(): String {
             return displayName
@@ -180,35 +187,44 @@ abstract class Bio(
         }
 
         @EventHandler
-        fun onPlayerInteractEntity(event: PlayerInteractEntityEvent) {
-            val player = player
-            val item = player.inventory.itemInMainHand
+        fun onEntityShootBow(event: EntityShootBowEvent) {
+            val projectile = event.projectile; if (projectile !is Firework) return
+            val item = event.consumable ?: return
 
-            if (item.type == Material.TOTEM_OF_UNDYING) {
-                val clicked = event.rightClicked
+            if (item.isSimilar(SurvivalItem.vaccine)) {
+                projectile.apply {
+                    fireworkMeta = fireworkMeta.apply {
+                        power = 127
 
-                if (clicked is Player) {
-                    val survivor = clicked.survival()
-
-                    if (survivor.bio is Zombie) {
-                        item.amount -= 1
-                        survivor.setBio(Type.HUMAN)
-                        clicked.playEffect(EntityEffect.TOTEM_RESURRECT)
-                        player.sendMessage(
-                            Component.text().color(TextColor.color(0x00FFFF)).content("${clicked.name}님을 치료했습니다!")
-                        )
-                        clicked.sendMessage(
-                            Component.text().color(TextColor.color(0x00FFFF)).content("좀비 바이러스가 치료되었습니다!")
-                        )
-                        val title = Title.title(
-                            Component.text().color(TextColor.color(0x00FFFF)).content(clicked.name).build(),
-                            Component.text().color(TextColor.color(0x00FFFF)).content("좀비 바이러스로부터 해방되었습니다!").build(),
-                            Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(500))
-                        )
-                        for (onlinePlayer in Bukkit.getOnlinePlayers()) {
-                            onlinePlayer.showTitle(title)
+                        repeat(16) {
+                            addEffect(FireworkEffect.builder().apply {
+                                with(FireworkEffect.Type.BALL_LARGE)
+                                withColor(Color.fromRGB(nextInt(0xFFFFFF)))
+                            }.build())
                         }
                     }
+                }
+            }
+        }
+
+        @TargetEntity(EntityProvider.EntityDamageByEntity.Shooter::class)
+        @EventHandler(ignoreCancelled = true)
+        fun onEntityDamageByProjectile(event: EntityDamageByEntityEvent) {
+            val damager = event.damager; if (damager !is Firework) return
+
+            if (damager.fireworkMeta.displayName() == SurvivalItem.vaccine.itemMeta.displayName()) {
+                val victim = event.entity; if (victim !is Player) return
+                event.isCancelled = true
+                val victimSurvival = victim.survival()
+                val victimBio = victimSurvival.bio
+
+                if (victimBio is Zombie && victimBio !is HyperZombie) {
+                    victimSurvival.setBio(Type.HUMAN)
+                    victim.playEffect(EntityEffect.TOTEM_RESURRECT)
+                    Bukkit.getServer().sendMessage(
+                        Component.text().color(TextColor.color(0x00FFFF))
+                            .content("${victim.name}님이 좀비 바이러스로부터 해방되었습니다!").build()
+                    )
                 }
             }
         }
@@ -230,6 +246,28 @@ abstract class Bio(
             Bukkit.getOnlinePlayers().forEach {
                 it.sendMessage(message)
                 it.showTitle(title)
+            }
+        }
+
+        @EventHandler
+        fun onPlayerInteract(event: PlayerInteractEvent) {
+            if (event.action != Action.RIGHT_CLICK_AIR) return
+            val item = event.item ?: return
+            if (item.isSimilar(SurvivalItem.hyperVaccine)) {
+                item.amount -= 1
+
+                val name = player.name
+
+                val title  = Title.title(
+                    text("하이퍼 백신 로켓 발사").color(TextColor.color(0xB2F6F6)).decorate(TextDecoration.BOLD),
+                    text("전 세계의 좀비 바이러스를 제거합니다.."),
+                    Title.Times.of(Duration.of(1, ChronoUnit.MILLIS), Duration.of(5, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))
+                )
+
+                Bukkit.getServer().showTitle(title)
+                Bukkit.getServer().sendMessage(text("$name(이)가 하이퍼 백신을 사용했습니다!").color(TextColor.color(0xB2F6F6)))
+
+                Survival.instance.playHyperVaccine(player.location)
             }
         }
     }
@@ -373,6 +411,7 @@ abstract class Bio(
 
         override fun applyAttribute() {
             player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = SurvivalConfig.zombieHealth
+            damage = SurvivalConfig.zombieDamage
         }
 
         @EventHandler(ignoreCancelled = true)
@@ -381,6 +420,8 @@ abstract class Bio(
                 event.isCancelled = true
             }
         }
+
+        var damage = 1.0
 
         @EventHandler(ignoreCancelled = true)
         @TargetEntity(EntityProvider.EntityDamageByEntity.Damager::class)
@@ -400,7 +441,7 @@ abstract class Bio(
                 victim.noDamageTicks = 0
             }
 
-            event.damage *= SurvivalConfig.zombieDamage
+            event.damage *= damage
 
             if (SurvivalConfig.witherDuration > 0) {
                 victim.addPotionEffect(
@@ -473,10 +514,14 @@ abstract class Bio(
 
         @EventHandler(ignoreCancelled = true)
         fun onCraftItem(event: CraftItemEvent) {
+            if (this is HyperZombie) return
+
             val item = event.currentItem ?: return
             val type = item.type
 
-            if ("DIAMOND" in type.name || type in SurvivalConfig.zombieUncraftables) {
+            if ("DIAMOND" in type.name || type in SurvivalConfig.zombieUncraftables ||
+                item.isSimilar(SurvivalItem.vaccine) || item.isSimilar(SurvivalItem.hyperVaccine)
+            ) {
                 event.isCancelled = true
                 player.sendMessage(Component.text("이 아이템은 제작 할 수 없습니다"))
             }
@@ -485,36 +530,9 @@ abstract class Bio(
         @EventHandler
         fun onPlayerDeath(event: PlayerDeathEvent) {
             if (player.killer != null && nextDouble() < SurvivalConfig.zombieItemDrop) {
-                NamespacedKey.fromString("vaccine")?.let { Bukkit.getRecipe(it) }?.let { recipe ->
-                    val loc = player.location
-                    val world = loc.world
-                    val biome = world.getBiome(loc.blockX, loc.blockY, loc.blockZ)
-                    val biomeName = biome.name
-
-                    event.drops += when {
-                        "DESERT" in biomeName -> {
-                            ItemStack(Material.RABBIT_FOOT)
-                        }
-                        "BEACH" in biomeName || "OCEAN" in biomeName -> {
-                            ItemStack(Material.NAUTILUS_SHELL)
-                        }
-                        "nether" in world.name -> {
-                            ItemStack(Material.BLAZE_ROD)
-                        }
-                        "the_end" in world.name -> {
-                            ItemStack(Material.PHANTOM_MEMBRANE)
-                        }
-                        else -> {
-                            when (nextInt(4)) {
-                                0 -> ItemStack(Material.GLISTERING_MELON_SLICE)
-                                1 -> ItemStack(Material.GOLDEN_CARROT)
-                                2 -> ItemStack(Material.GOLDEN_APPLE)
-                                3 -> ItemStack(Material.ZOMBIE_HEAD)
-                                else -> error("???")
-                            }
-                        }
-                    }
-                }
+                val loc = player.location
+                val world = loc.world
+                world.dropItemNaturally(loc, ItemStack(Material.ZOMBIE_HEAD))
             }
         }
 
@@ -525,7 +543,7 @@ abstract class Bio(
         }
     }
 
-    class SuperZombie : Zombie(Type.SUPER_ZOMBIE) {
+    open class SuperZombie(type: Type = Type.SUPER_ZOMBIE) : Zombie(type) {
         companion object {
             var targetUUID: UUID? = null
             var targetPlayer: Player? = null
@@ -632,6 +650,26 @@ abstract class Bio(
                             player.world.strikeLightningEffect(player.location)
                         }
                     }
+            }
+        }
+
+        override fun onAttach() {
+            super.onAttach()
+
+            if (this !is HyperZombie) {
+                val name = player.name
+                if (name == "ehdgh141" || name == "Heptagram") {
+                    player.sendMessage(
+                        text("살아남기 위해 고군분투했지만 슈퍼좀비가 되었다..\n하지만 좀비가 되어 Thinking을 해보니 인간은 사라져야해!").color(
+                            TextColor.color(0x860707)
+                        )
+                    )
+                    player.sendMessage(
+                        text("인간을 말.살. 한다-").color(TextColor.color(0xFF0000))
+                            .clickEvent(ClickEvent.runCommand("/evolve")).decorate(TextDecoration.BOLD)
+                            .hoverEvent(text("하이퍼 좀비로 진화합니다\n하이퍼 좀비는 백신의 효과를 받을 수 없습니다."))
+                    )
+                }
             }
         }
 
@@ -751,6 +789,81 @@ abstract class Bio(
                         it.sendMessage(Component.text("${this.player.name}(이)가 당신의 소환에 응했습니다!"))
                     }
                 }
+            }
+        }
+    }
+
+    class HyperZombie : SuperZombie(Type.HYPER_ZOMBIE) {
+        override fun applyAttribute() {
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = SurvivalConfig.hyperZombieHealth
+            damage = SurvivalConfig.hyperZombieDamage
+            player.walkSpeed = SurvivalConfig.hyperZombieSpeed.toFloat()
+        }
+
+        override fun onDetach() {
+            player.walkSpeed = 0.2F
+        }
+
+        companion object {
+            val colors = NamedTextColor.NAMES.values().toList()
+        }
+
+        private var hyperJumpTicks = 0
+
+        override fun onUpdate() {
+            super.onUpdate()
+
+            if (ticks % 2 == 0) {
+                val color = colors.random()
+                val team = team(color)
+                team.addEntry(player.name)
+            }
+
+            if (player.isSneaking && player.isOnGround) {
+                hyperJumpTicks++
+
+                if (hyperJumpTicks >= SurvivalConfig.hyperZombieJumpTick) {
+                    player.sendActionBar(Component.text("하이퍼 점프 활성화!"))
+                    player.addPotionEffect(
+                        PotionEffect(
+                            PotionEffectType.JUMP,
+                            19,
+                            SurvivalConfig.hyperZombieJumpAmplifier,
+                            false,
+                            false,
+                            true
+                        )
+                    )
+                }
+            } else {
+                hyperJumpTicks = 0
+                player.removePotionEffect(PotionEffectType.JUMP)
+            }
+        }
+
+        @EventHandler
+        fun onPlayerJump(event: PlayerJumpEvent) {
+            if (player.hasPotionEffect(PotionEffectType.JUMP)) {
+                val loc = player.location
+                FireworkEffect.builder().apply {
+                    with(FireworkEffect.Type.BURST)
+                    withColor(Color.fromRGB(nextInt(0xFFFFFF)))
+                    withTrail()
+                    withFlicker()
+                }.build().let {
+                    loc.world.playFirework(loc, it)
+                }
+
+            }
+        }
+
+        private fun team(color: NamedTextColor): Team {
+            val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+            val teamName = "hyper-${color.asHexString()}"
+            return scoreboard.getTeam(teamName) ?: scoreboard.registerNewTeam(teamName).apply {
+                color(color)
+                setCanSeeFriendlyInvisibles(true)
+                setAllowFriendlyFire(false)
             }
         }
     }
