@@ -222,7 +222,7 @@ abstract class Bio(
                     victimSurvival.setBio(Type.HUMAN)
                     victim.playEffect(EntityEffect.TOTEM_RESURRECT)
                     Bukkit.getServer().sendMessage(
-                        Component.text().color(TextColor.color(0x00FFFF))
+                        text().color(TextColor.color(0x00FFFF))
                             .content("${victim.name}님이 좀비 바이러스로부터 해방되었습니다!").build()
                     )
                 }
@@ -236,9 +236,9 @@ abstract class Bio(
 
             survivor.setBio(newBioType)
 
-            val message = Component.text("${ChatColor.RED}${player.name}님이 ${newBioType.displayName}가 되었습니다!")
+            val message = text("${ChatColor.RED}${player.name}님이 ${newBioType.displayName}가 되었습니다!")
             val title = Title.title(
-                Component.text("${ChatColor.RED}생존자 사망"),
+                text("${ChatColor.RED}생존자 사망"),
                 message,
                 Title.Times.of(Duration.ofMillis(500L), Duration.ofSeconds(5L), Duration.ofSeconds(1))
             )
@@ -523,7 +523,7 @@ abstract class Bio(
                 item.isSimilar(SurvivalItem.vaccine) || item.isSimilar(SurvivalItem.hyperVaccine)
             ) {
                 event.isCancelled = true
-                player.sendMessage(Component.text("이 아이템은 제작 할 수 없습니다"))
+                player.sendMessage(text("이 아이템은 제작 할 수 없습니다"))
             }
         }
 
@@ -634,8 +634,8 @@ abstract class Bio(
                         summonYaw = 360.0F / summons.count()
 
                         val title = Title.title(
-                            Component.text("${ChatColor.RED}Grrrr.."),
-                            Component.text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
+                            text("${ChatColor.RED}Grrrr.."),
+                            text("${ChatColor.RESET}${player.name}(이)가 당신을 소환하려합니다!"),
                             Title.Times.of(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofSeconds(1))
                         )
 
@@ -655,22 +655,6 @@ abstract class Bio(
 
         override fun onAttach() {
             super.onAttach()
-
-            if (this !is HyperZombie) {
-                val name = player.name
-                if (name == "ehdgh141" || name == "Heptagram") {
-                    player.sendMessage(
-                        text("살아남기 위해 고군분투했지만 슈퍼좀비가 되었다..\n하지만 좀비가 되어 Thinking을 해보니 인간은 사라져야해!").color(
-                            TextColor.color(0x860707)
-                        )
-                    )
-                    player.sendMessage(
-                        text("인간을 말.살. 한다-").color(TextColor.color(0xFF0000))
-                            .clickEvent(ClickEvent.runCommand("/evolve")).decorate(TextDecoration.BOLD)
-                            .hoverEvent(text("하이퍼 좀비로 진화합니다\n하이퍼 좀비는 백신의 효과를 받을 수 없습니다."))
-                    )
-                }
-            }
         }
 
         override fun onDetach() {

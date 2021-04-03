@@ -8,6 +8,8 @@ commands:
     permission: survival.command
   sacrifice:
     permission: survival.sacrifice
+  thinking:
+    permission: survival.thinking
   evolve:
     permission: survival.evolve
 permissions:

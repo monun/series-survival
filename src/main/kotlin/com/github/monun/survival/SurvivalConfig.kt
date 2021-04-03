@@ -8,21 +8,6 @@ import java.util.*
 
 object SurvivalConfig {
     @Config
-    var hyperZombieJumpAmplifier = 12
-
-    @Config
-    var hyperZombieJumpTick = 60
-
-    @Config
-    var hyperZombieDamage = 2.0
-
-    @Config
-    var hyperZombieSpeed = 0.3
-
-    @Config
-    var hyperZombieHealth = 40.0
-
-    @Config
     var bootsFallSlow = 4
 
     @Config
@@ -35,7 +20,7 @@ object SurvivalConfig {
     var spectorDurationTick = 200
 
     @Config
-    var summonCount = 5
+    var summonCount = 3
 
     @Config
     var spectorCooldownTick = 20L * 60L * 1L
@@ -56,7 +41,22 @@ object SurvivalConfig {
     var zombieHealth = 20.0
 
     @Config
-    var superZombieHealth = 10.0
+    var superZombieHealth = 20.0
+
+    @Config
+    var hyperZombieJumpAmplifier = 12
+
+    @Config
+    var hyperZombieJumpTick = 50
+
+    @Config
+    var hyperZombieDamage = 2.0
+
+    @Config
+    var hyperZombieSpeed = 0.3
+
+    @Config
+    var hyperZombieHealth = 40.0
 
     @Config
     var witherAmplifier = 0
@@ -68,7 +68,7 @@ object SurvivalConfig {
     var zombieDamage = 0.5
 
     @Config
-    var zombieItemDrop = 0.05
+    var zombieItemDrop = 0.5
 
     @Config
     var defaultHumanList = arrayListOf(
