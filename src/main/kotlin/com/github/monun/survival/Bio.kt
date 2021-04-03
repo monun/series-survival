@@ -785,6 +785,8 @@ abstract class Bio(
         }
 
         override fun onDetach() {
+            super.onDetach()
+
             player.walkSpeed = 0.2F
         }
 

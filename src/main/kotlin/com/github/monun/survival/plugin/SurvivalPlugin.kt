@@ -82,19 +82,16 @@ class SurvivalPlugin : JavaPlugin() {
                 }
                 executes {
                     val player = it.sender as Player
-                    val name = player.name
-                    if (name == "komq" || name == "ehdgh141" || name == "Heptagram") {
-                        player.sendMessage(
-                            text("살아남기 위해 고군분투했지만 슈퍼좀비가 되었다..\n하지만 좀비가 되어 Thinking을 해보니 인간은 사라져야해!").color(
-                                TextColor.color(0x860707)
-                            )
+
+                    player.sendMessage(
+                        text("살아남기 위해 고군분투했지만 슈퍼좀비가 되었다..\n하지만 좀비가 되어 Thinking을 해보니 인간은 사라져야해!").color(
+                            TextColor.color(0x860707)
                         )
-                        player.sendMessage(
-                            text("인간을 말.살. 한다-").color(TextColor.color(0xFF0000))
-                                .clickEvent(ClickEvent.runCommand("/evolve")).decorate(TextDecoration.BOLD)
-                                .hoverEvent(text("하이퍼 좀비로 진화합니다\n하이퍼 좀비는 백신의 효과를 받을 수 없습니다."))
-                        )
-                    }
+                    )
+                    player.sendMessage(
+                        text("인간을 말.살. 한다-").color(TextColor.color(0xFF0000))
+                            .clickEvent(ClickEvent.runCommand("/evolve")).decorate(TextDecoration.BOLD)
+                            .hoverEvent(text("하이퍼 좀비로 진화합니다\n하이퍼 좀비는 백신의 효과를 받을 수 없습니다.")))
                 }
             }
             register("evolve") {

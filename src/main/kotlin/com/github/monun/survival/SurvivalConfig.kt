@@ -32,7 +32,7 @@ object SurvivalConfig {
     var summonCooldownTick = 20L * 60L * 5L
 
     @Config
-    var worldSize = 2000.0
+    var worldSize = 4096.0
 
     @Config
     var humanHealth = 20.0
@@ -115,8 +115,8 @@ object SurvivalConfig {
     fun load(configFile: File) {
         computeConfig(configFile)
 
-        defaultHumans = defaultHumanList.toSortedSet(String.CASE_INSENSITIVE_ORDER)
-        defaultSuperZombies = defaultSuperZombieList.toSortedSet(String.CASE_INSENSITIVE_ORDER)
+        defaultHumans = defaultHumanList.map { it.trim() }.toSortedSet(String.CASE_INSENSITIVE_ORDER)
+        defaultSuperZombies = defaultSuperZombieList.map { it.trim() }.toSortedSet(String.CASE_INSENSITIVE_ORDER)
         zombieUncraftables = EnumSet.copyOf(zombieUncraftableList.map { Material.valueOf(it.toUpperCase()) })
     }
 }
