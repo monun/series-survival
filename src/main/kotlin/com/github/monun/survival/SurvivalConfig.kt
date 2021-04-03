@@ -87,7 +87,9 @@ object SurvivalConfig {
         "komq",
         "lotear",
         "Kin_A",
-        "9oo9oo"
+        "9oo9oo",
+        "lleeshin",
+        "0hoonida"
     )
 
     @Config
