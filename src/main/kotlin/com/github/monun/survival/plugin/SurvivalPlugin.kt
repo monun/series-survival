@@ -33,6 +33,7 @@ class SurvivalPlugin : JavaPlugin() {
         val configFile = File(dataFolder, "config.yml")
         SurvivalConfig.load(configFile)
         Whitelist.load(File(dataFolder, "whitelist.txt"))
+        Gosuban.ban(File(dataFolder, "Gosuban.txt"))
 
         setupRecipe()
         setupCommands()
@@ -135,8 +136,7 @@ class SurvivalPlugin : JavaPlugin() {
                         isInvulnerable = true
                         setGravity(false)
                     }
-
-                    if (nextInt(2) == 0) {
+                    if (nextInt(10) <= 5) {
                         world.dropItem(loc, ItemStack(Material.NETHER_STAR))
                     } else {
                         world.spawn(loc.apply { y -= 0.25 }, ArmorStand::class.java).apply {
