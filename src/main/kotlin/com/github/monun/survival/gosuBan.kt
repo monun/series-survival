@@ -3,7 +3,7 @@ package com.github.monun.survival
 import com.google.common.collect.ImmutableSortedSet
 import java.io.File
 
-object gosuBan {
+object Gosuban {
     lateinit var denied: Set<String>
 
     fun ban(file: File) {
