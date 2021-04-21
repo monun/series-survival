@@ -35,7 +35,7 @@ class EventListener(
         if (name in SurvivalConfig.defaultHumans || name in Whitelist.allows) return
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("다음 기회에 ㅜㅜ"))
         //고수 밴 기능 추가
-        if (name in SurvivalConfig.defaultHumans || name in gosuBan.denied) return
+        if (name in SurvivalConfig.defaultHumans || name in Gosuban.denied) return
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("고수 밴"))
 
     }
