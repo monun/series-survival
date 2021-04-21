@@ -2,10 +2,7 @@ package com.github.monun.survival.plugin
 
 import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent
-import com.github.monun.survival.Survival
-import com.github.monun.survival.SurvivalConfig
-import com.github.monun.survival.Whitelist
-import com.github.monun.survival.survival
+import com.github.monun.survival.*
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
@@ -37,6 +34,10 @@ class EventListener(
         val name = event.name
         if (name in SurvivalConfig.defaultHumans || name in Whitelist.allows) return
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("다음 기회에 ㅜㅜ"))
+        //고수 밴 기능 추가
+        if (name in SurvivalConfig.defaultHumans || name in gosuBan.denied) return
+        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("고수 밴"))
+
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

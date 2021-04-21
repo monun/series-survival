@@ -6,6 +6,7 @@ import java.io.File
 object Whitelist {
     lateinit var allows: Set<String>
 
+
     fun load(file: File) {
         if (!file.exists()) {
             file.createNewFile()
@@ -14,4 +15,6 @@ object Whitelist {
         val lines = file.readLines()
         allows = ImmutableSortedSet.copyOf(String.CASE_INSENSITIVE_ORDER, lines)
     }
+
+
 }
